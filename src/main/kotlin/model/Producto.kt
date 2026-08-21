@@ -1,4 +1,4 @@
-package FastFoodApp
+package FastFoodApp.model
 
 data class Producto(
     val idProducto: Int,

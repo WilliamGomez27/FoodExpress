@@ -1,21 +1,29 @@
-package FastFoodApp
+package FastFoodApp.dao
 
+import FastFoodApp.database.ConexionDB
+import FastFoodApp.model.Producto
 import java.sql.SQLException
 
 class InventarioDAO {
-    private val conexion = ConexionDB.getConexion()
 
     /**
      * Registra un movimiento de inventario (entrada o salida) con su motivo.
      * Usa transacción para garantizar consistencia entre historial y stock.
+     * La conexión se obtiene fresca en cada llamada para evitar referencias a conexiones expiradas.
      */
     fun registrarMovimiento(idProducto: Int, cantidad: Int, motivo: String, esEntrada: Boolean): Boolean {
+        val conexion = ConexionDB.getConexion()
+        if (conexion == null) {
+            println("✗ [DAO] No se pudo obtener conexión para registrarMovimiento")
+            return false
+        }
+
         return try {
-            conexion?.autoCommit = false
+            conexion.autoCommit = false
 
             // 1. Guardar en historial
             val sqlHistorial = "INSERT INTO historial_inventario (id_producto, cantidad, motivo, tipo) VALUES (?, ?, ?, ?)"
-            conexion?.prepareStatement(sqlHistorial)?.use { stmt ->
+            conexion.prepareStatement(sqlHistorial).use { stmt ->
                 stmt.setInt(1, idProducto)
                 stmt.setInt(2, cantidad)
                 stmt.setString(3, motivo)
@@ -26,28 +34,44 @@ class InventarioDAO {
             // 2. Actualizar stock
             val operacion = if (esEntrada) "+" else "-"
             val sqlStock = "UPDATE productos SET stock_actual = stock_actual $operacion ? WHERE id_producto = ?"
-            conexion?.prepareStatement(sqlStock)?.use { stmt ->
+            conexion.prepareStatement(sqlStock).use { stmt ->
                 stmt.setInt(1, cantidad)
                 stmt.setInt(2, idProducto)
                 stmt.executeUpdate()
             }
 
-            conexion?.commit()
+            conexion.commit()
+            println("✓ [DAO] Movimiento registrado: producto $idProducto, cantidad $cantidad")
             true
         } catch (e: SQLException) {
-            conexion?.rollback()
-            println("Error en registrarMovimiento: ${e.message}")
+            try {
+                conexion.rollback()
+                println("✗ [DAO] Transacción revertida por error: ${e.message}")
+            } catch (rollbackEx: SQLException) {
+                println("✗ [DAO] Error además al hacer rollback: ${rollbackEx.message}")
+            }
+            println("✗ [DAO] Error en registrarMovimiento: ${e.message}")
             false
         } finally {
-            conexion?.autoCommit = true
+            try {
+                conexion.autoCommit = true
+            } catch (e: SQLException) {
+                println("✗ [DAO] Error al restaurar autoCommit: ${e.message}")
+            }
         }
     }
 
     /**
      * Obtiene todos los productos con su información completa de inventario.
-     * CORRECCIÓN: Esta función estaba incorrectamente anidada dentro de registrarMovimiento().
+     * La conexión se obtiene fresca en cada llamada.
      */
     fun obtenerTodosProductos(): List<Producto> {
+        val conexion = ConexionDB.getConexion()
+        if (conexion == null) {
+            println("✗ [DAO] No se pudo obtener conexión para obtenerTodosProductos")
+            return emptyList()
+        }
+
         val lista = mutableListOf<Producto>()
         val sql = """
             SELECT id_producto, nombre, unidades_paq, peso_libras, precio_venta, stock_actual, stock_minimo
@@ -55,7 +79,7 @@ class InventarioDAO {
             ORDER BY nombre ASC
         """
         return try {
-            conexion?.prepareStatement(sql)?.use { stmt ->
+            conexion.prepareStatement(sql).use { stmt ->
                 val rs = stmt.executeQuery()
                 while (rs.next()) {
                     lista.add(
@@ -71,9 +95,10 @@ class InventarioDAO {
                     )
                 }
             }
+            println("✓ [DAO] Cargados ${lista.size} productos")
             lista
         } catch (e: SQLException) {
-            println("Error en obtenerTodosProductos: ${e.message}")
+            println("✗ [DAO] Error en obtenerTodosProductos: ${e.message}")
             emptyList()
         }
     }

@@ -1,5 +1,9 @@
-package FastFoodApp
+package FastFoodApp.ui.ventas
 
+import FastFoodApp.model.ItemVenta
+import FastFoodApp.model.ProductoVenta
+import FastFoodApp.theme.AppColors
+import FastFoodApp.viewmodel.VentasViewModel
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -91,7 +95,7 @@ fun PantallaVentas() {
                                 items(filtrados) { producto ->
                                     CatalogoFila(
                                         producto = producto,
-                                        enCarrito = vm.carrito.find { it.producto.idProducto == producto.idProducto }?.cantidad ?: 0,
+                                        enCarrito = vm.carrito.find { it.productoVenta.idProductoVenta == producto.idProductoVenta }?.cantidad ?: 0,
                                         onAgregar = { vm.agregarAlCarrito(producto) }
                                     )
                                     Divider(color = AppColors.Divider, thickness = 0.5.dp)
@@ -134,9 +138,9 @@ fun PantallaVentas() {
                                 items(vm.carrito) { item ->
                                     CarritoFila(
                                         item = item,
-                                        onReducir  = { vm.reducirDelCarrito(item.producto) },
-                                        onAgregar  = { vm.agregarAlCarrito(item.producto) },
-                                        onEliminar = { vm.eliminarDelCarrito(item.producto) }
+                                        onReducir  = { vm.reducirDelCarrito(item.productoVenta) },
+                                        onAgregar  = { vm.agregarAlCarrito(item.productoVenta) },
+                                        onEliminar = { vm.eliminarDelCarrito(item.productoVenta) }
                                     )
                                     Divider(color = AppColors.Divider, thickness = 0.5.dp)
                                 }
@@ -175,14 +179,14 @@ fun PantallaVentas() {
 
 // ── Fila del catálogo ─────────────────────────────────────────────────────────
 @Composable
-fun CatalogoFila(producto: Producto, enCarrito: Int, onAgregar: () -> Unit) {
+fun CatalogoFila(producto: ProductoVenta, enCarrito: Int, onAgregar: () -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(modifier = Modifier.weight(1f)) {
             Text(producto.nombre, fontSize = 13.sp, fontWeight = FontWeight.Medium, color = AppColors.TextPrimary)
-            Text("Stock: ${producto.stockActual}  •  Q%.2f".format(producto.precioVenta), fontSize = 11.sp, color = AppColors.TextMuted)
+            Text("${producto.categoria}  •  Q%.2f".format(producto.precioVenta), fontSize = 11.sp, color = AppColors.TextMuted)
         }
         if (enCarrito > 0) {
             Box(
@@ -198,11 +202,10 @@ fun CatalogoFila(producto: Producto, enCarrito: Int, onAgregar: () -> Unit) {
         }
         IconButton(
             onClick = onAgregar,
-            enabled = producto.stockActual > enCarrito,
             modifier = Modifier
                 .size(34.dp)
                 .clip(RoundedCornerShape(8.dp))
-                .background(if (producto.stockActual > enCarrito) AppColors.Primary.copy(0.1f) else Color.Transparent)
+                .background(AppColors.Primary.copy(0.1f))
         ) {
             Icon(Icons.Default.Add, contentDescription = "Agregar", tint = AppColors.Primary, modifier = Modifier.size(18.dp))
         }
@@ -217,7 +220,7 @@ fun CarritoFila(item: ItemVenta, onReducir: () -> Unit, onAgregar: () -> Unit, o
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            Text(item.producto.nombre, fontSize = 13.sp, fontWeight = FontWeight.Medium, maxLines = 1)
+            Text(item.productoVenta.nombre, fontSize = 13.sp, fontWeight = FontWeight.Medium, maxLines = 1)
             Text("Q%.2f".format(item.subtotal), fontSize = 12.sp, color = AppColors.Primary, fontWeight = FontWeight.SemiBold)
         }
         // Controles de cantidad

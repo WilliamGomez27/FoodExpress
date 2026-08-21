@@ -1,4 +1,4 @@
-package FastFoodApp
+package FastFoodApp.database
 
 import java.sql.Connection
 import java.sql.DriverManager

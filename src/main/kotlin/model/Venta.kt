@@ -1,15 +1,13 @@
-package FastFoodApp
-
-import java.time.LocalDateTime
+package FastFoodApp.model
 
 /**
  * Representa una línea dentro de una venta (un producto y su cantidad).
  */
 data class ItemVenta(
-    val producto: Producto,
+    val productoVenta: ProductoVenta,
     var cantidad: Int
 ) {
-    val subtotal: Double get() = producto.precioVenta * cantidad
+    val subtotal: Double get() = productoVenta.precioVenta * cantidad
 }
 
 /**

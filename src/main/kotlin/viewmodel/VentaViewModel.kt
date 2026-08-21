@@ -1,5 +1,10 @@
-package FastFoodApp
+package FastFoodApp.viewmodel
 
+import FastFoodApp.dao.VentaDAO
+import FastFoodApp.model.ItemVenta
+import FastFoodApp.model.ProductoVenta
+import FastFoodApp.model.Venta
+import FastFoodApp.repository.CatalogoVentas
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -14,11 +19,10 @@ import kotlinx.coroutines.withContext
  */
 class VentasViewModel(private val scope: CoroutineScope) {
 
-    private val ventasDAO    = VentasDAO()
-    private val inventarioDAO = InventarioDAO()
+    private val ventasDAO = VentaDAO()
 
     // ── Estado observable ────────────────────────────────────────────────────
-    var catalogoProductos by mutableStateOf(listOf<Producto>())
+    var catalogoProductos by mutableStateOf(listOf<ProductoVenta>())
         private set
 
     var carrito           by mutableStateOf(listOf<ItemVenta>())
@@ -44,18 +48,18 @@ class VentasViewModel(private val scope: CoroutineScope) {
     fun cargarDatos() {
         scope.launch {
             cargando = true
-            catalogoProductos = withContext(Dispatchers.IO) { inventarioDAO.obtenerTodosProductos() }
+            catalogoProductos = CatalogoVentas.obtenerCatalogo()
             historialVentas   = withContext(Dispatchers.IO) { ventasDAO.obtenerUltimasVentas() }
             cargando = false
         }
     }
 
     /** Agrega un producto al carrito o incrementa su cantidad si ya existe. */
-    fun agregarAlCarrito(producto: Producto) {
-        val existente = carrito.find { it.producto.idProducto == producto.idProducto }
+    fun agregarAlCarrito(producto: ProductoVenta) {
+        val existente = carrito.find { it.productoVenta.idProductoVenta == producto.idProductoVenta }
         carrito = if (existente != null) {
             carrito.map {
-                if (it.producto.idProducto == producto.idProducto)
+                if (it.productoVenta.idProductoVenta == producto.idProductoVenta)
                     it.copy(cantidad = it.cantidad + 1)
                 else it
             }
@@ -65,15 +69,15 @@ class VentasViewModel(private val scope: CoroutineScope) {
     }
 
     /** Reduce en 1 la cantidad de un item del carrito; si llega a 0 lo elimina. */
-    fun reducirDelCarrito(producto: Producto) {
+    fun reducirDelCarrito(producto: ProductoVenta) {
         carrito = carrito
-            .map { if (it.producto.idProducto == producto.idProducto) it.copy(cantidad = it.cantidad - 1) else it }
+            .map { if (it.productoVenta.idProductoVenta == producto.idProductoVenta) it.copy(cantidad = it.cantidad - 1) else it }
             .filter { it.cantidad > 0 }
     }
 
     /** Elimina un item del carrito por completo. */
-    fun eliminarDelCarrito(producto: Producto) {
-        carrito = carrito.filter { it.producto.idProducto != producto.idProducto }
+    fun eliminarDelCarrito(producto: ProductoVenta) {
+        carrito = carrito.filter { it.productoVenta.idProductoVenta != producto.idProductoVenta }
     }
 
     fun limpiarCarrito() { carrito = emptyList() }
@@ -92,7 +96,7 @@ class VentasViewModel(private val scope: CoroutineScope) {
                 mensajeSnackbar = "✅ Venta #$id registrada — Total: Q %.2f".format(totalCarrito)
                 limpiarCarrito()
                 // Refrescar catálogo y historial
-                catalogoProductos = withContext(Dispatchers.IO) { inventarioDAO.obtenerTodosProductos() }
+                catalogoProductos = CatalogoVentas.obtenerCatalogo()
                 historialVentas   = withContext(Dispatchers.IO) { ventasDAO.obtenerUltimasVentas() }
             } else {
                 mensajeSnackbar = "❌ Error al procesar la venta"

@@ -1,12 +1,12 @@
-package FastFoodApp
+package FastFoodApp.viewmodel
 
+import FastFoodApp.repository.InventarioRepository
+import FastFoodApp.model.Producto
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 /**
  * ViewModel para la pantalla de Inventario.
@@ -15,7 +15,7 @@ import kotlinx.coroutines.withContext
  */
 class InventarioViewModel(private val scope: CoroutineScope) {
 
-    private val dao = InventarioDAO()
+    private val repository = InventarioRepository()
 
     // ── Estado observable ────────────────────────────────────────────────────
     var productos       by mutableStateOf(listOf<Producto>())
@@ -41,7 +41,7 @@ class InventarioViewModel(private val scope: CoroutineScope) {
     fun cargarProductos() {
         scope.launch {
             cargando = true
-            productos = withContext(Dispatchers.IO) { dao.obtenerTodosProductos() }
+            productos = repository.obtenerProductos()
             if (productoSel == null && productos.isNotEmpty()) {
                 productoSel = productos.first()
             }
@@ -62,21 +62,42 @@ class InventarioViewModel(private val scope: CoroutineScope) {
             return
         }
 
+        val esEntrada = (motivo == "Ajuste" || motivo == "Devolución")
+        // No permitir venta o consumo si el stock quedará menor a 0
+        if (!esEntrada && (producto.stockActual - cant < 0)) {
+            mensajeSnackbar = "⚠️ No hay stock suficiente (Stock actual: ${producto.stockActual})"
+            return
+        }
+
         scope.launch {
             cargando = true
-            val esEntrada = (motivo == "Ajuste" || motivo == "Devolución")
-            val exito = withContext(Dispatchers.IO) {
-                dao.registrarMovimiento(producto.idProducto, cant, motivo, esEntrada)
-            }
+            val exito = repository.registrarMovimiento(producto.idProducto, cant, motivo, esEntrada)
+            
             if (exito) {
                 mensajeSnackbar = "✅ $motivo registrada: $cant unidades de ${producto.nombre}"
                 cantidad = ""
                 // Refrescar lista
-                productos = withContext(Dispatchers.IO) { dao.obtenerTodosProductos() }
+                productos = repository.obtenerProductos()
                 // Actualizar el producto seleccionado con datos frescos
                 productoSel = productos.find { it.idProducto == producto.idProducto }
             } else {
                 mensajeSnackbar = "❌ Error al registrar el movimiento"
+            }
+            cargando = false
+        }
+    }
+
+    /** Registra un nuevo producto manualmente en la BD */
+    fun registrarNuevoProducto(nuevoProducto: Producto) {
+        scope.launch {
+            cargando = true
+            val exito = repository.insertarProducto(nuevoProducto)
+            if (exito) {
+                mensajeSnackbar = "✅ Producto '${nuevoProducto.nombre}' creado exitosamente"
+                // Refrescar lista
+                productos = repository.obtenerProductos()
+            } else {
+                mensajeSnackbar = "❌ Error al crear el producto"
             }
             cargando = false
         }

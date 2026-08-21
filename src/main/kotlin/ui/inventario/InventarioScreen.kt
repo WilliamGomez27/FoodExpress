@@ -1,19 +1,17 @@
-package FastFoodApp
+package FastFoodApp.ui.inventario
 
+import FastFoodApp.theme.AppColors
+import FastFoodApp.viewmodel.InventarioViewModel
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Warning
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -24,6 +22,7 @@ fun PantallaInventario() {
     val vm            = remember { InventarioViewModel(scope) }
     val scaffoldState = rememberScaffoldState()
     var expandido     by remember { mutableStateOf("") }
+    var mostrarDialogoNuevoProducto by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) { vm.cargarProductos() }
 
@@ -42,17 +41,32 @@ fun PantallaInventario() {
                 .padding(28.dp)
         ) {
             // ── Header ──────────────────────────────────────────────────────
-            Text(
-                text = "Inventario",
-                fontSize = 26.sp,
-                fontWeight = FontWeight.Bold,
-                color = AppColors.TextPrimary
-            )
-            Text(
-                text = "Gestión y movimientos de productos",
-                fontSize = 13.sp,
-                color = AppColors.TextMuted
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(
+                        text = "Inventario",
+                        fontSize = 26.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = AppColors.TextPrimary
+                    )
+                    Text(
+                        text = "Gestión y movimientos de productos",
+                        fontSize = 13.sp,
+                        color = AppColors.TextMuted
+                    )
+                }
+                Button(
+                    onClick = { mostrarDialogoNuevoProducto = true },
+                    shape = RoundedCornerShape(8.dp),
+                    colors = ButtonDefaults.buttonColors(backgroundColor = AppColors.Primary)
+                ) {
+                    Text("Nuevo Producto", color = AppColors.White, fontWeight = FontWeight.Medium)
+                }
+            }
             Spacer(modifier = Modifier.height(20.dp))
 
             // ── Tarjetas de resumen ──────────────────────────────────────────
@@ -229,100 +243,53 @@ fun PantallaInventario() {
             }
         }
     }
-}
 
-// ── Fila de producto en tabla ──────────────────────────────────────────────────
-@Composable
-fun ProductoFila(producto: Producto, isSelected: Boolean, onClick: () -> Unit) {
-    val bg = if (isSelected) AppColors.Primary.copy(alpha = 0.06f) else Color.Transparent
-    val stockBajo = producto.stockActual <= producto.stockMinimo
+    if (mostrarDialogoNuevoProducto) {
+        var nombre by remember { mutableStateOf("") }
+        var unidadesPaq by remember { mutableStateOf("") }
+        var pesoLibras by remember { mutableStateOf("") }
+        var precioVenta by remember { mutableStateOf("") }
+        var stockActual by remember { mutableStateOf("") }
+        var stockMinimo by remember { mutableStateOf("") }
 
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(bg)
-            .padding(horizontal = 16.dp, vertical = 10.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        // Nombre — clickable
-        TextButton(
-            onClick = onClick,
-            modifier = Modifier.weight(2.5f),
-            contentPadding = PaddingValues(0.dp)
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                if (stockBajo) {
-                    Icon(
-                        Icons.Default.Warning,
-                        contentDescription = "Stock bajo",
-                        tint = AppColors.Danger,
-                        modifier = Modifier.size(14.dp).padding(end = 2.dp)
-                    )
+        AlertDialog(
+            onDismissRequest = { mostrarDialogoNuevoProducto = false },
+            title = { Text("Nuevo Producto", fontWeight = FontWeight.Bold) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedTextField(value = nombre, onValueChange = { nombre = it }, label = { Text("Nombre") })
+                    OutlinedTextField(value = unidadesPaq, onValueChange = { unidadesPaq = it }, label = { Text("Unidades por Paq.") })
+                    OutlinedTextField(value = pesoLibras, onValueChange = { pesoLibras = it }, label = { Text("Peso (libras)") })
+                    OutlinedTextField(value = precioVenta, onValueChange = { precioVenta = it }, label = { Text("Precio de Venta") })
+                    OutlinedTextField(value = stockActual, onValueChange = { stockActual = it }, label = { Text("Stock Actual") })
+                    OutlinedTextField(value = stockMinimo, onValueChange = { stockMinimo = it }, label = { Text("Stock Mínimo") })
                 }
-                Text(
-                    text = producto.nombre,
-                    fontSize = 13.sp,
-                    fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
-                    color = if (isSelected) AppColors.Primary else AppColors.TextPrimary
-                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        val nuevoProducto = FastFoodApp.model.Producto(
+                            idProducto = 0,
+                            nombre = nombre,
+                            unidadesPaq = unidadesPaq.toIntOrNull() ?: 0,
+                            pesoLibras = pesoLibras.toDoubleOrNull() ?: 0.0,
+                            precioVenta = precioVenta.toDoubleOrNull() ?: 0.0,
+                            stockActual = stockActual.toIntOrNull() ?: 0,
+                            stockMinimo = stockMinimo.toIntOrNull() ?: 0
+                        )
+                        vm.registrarNuevoProducto(nuevoProducto)
+                        mostrarDialogoNuevoProducto = false
+                    },
+                    colors = ButtonDefaults.buttonColors(backgroundColor = AppColors.Primary)
+                ) {
+                    Text("Guardar", color = AppColors.White)
+                }
+            },
+            dismissButton = {
+                OutlinedButton(onClick = { mostrarDialogoNuevoProducto = false }) {
+                    Text("Cancelar")
+                }
             }
-        }
-
-        // Stock actual
-        Text(
-            text = "${producto.stockActual}",
-            modifier = Modifier.weight(1f),
-            fontSize = 13.sp,
-            color = if (stockBajo) AppColors.Danger else AppColors.TextPrimary,
-            fontWeight = if (stockBajo) FontWeight.Bold else FontWeight.Normal
         )
-
-        // Stock mínimo
-        Text(
-            text = "${producto.stockMinimo}",
-            modifier = Modifier.weight(1f),
-            fontSize = 13.sp,
-            color = AppColors.TextMuted
-        )
-
-        // Precio
-        Text(
-            text = "Q%.2f".format(producto.precioVenta),
-            modifier = Modifier.weight(1.2f),
-            fontSize = 13.sp,
-            color = AppColors.TextPrimary
-        )
-
-        // Badge de estado
-        StockBadge(stockBajo = stockBajo, modifier = Modifier.weight(1.5f))
     }
-}
-
-@Composable
-fun StockBadge(stockBajo: Boolean, modifier: Modifier = Modifier) {
-    val color = if (stockBajo) AppColors.Danger else AppColors.Success
-    val texto = if (stockBajo) "Stock Bajo" else "OK"
-    Box(modifier = modifier) {
-        Box(
-            modifier = Modifier
-                .clip(RoundedCornerShape(20.dp))
-                .background(color.copy(alpha = 0.12f))
-                .border(0.5.dp, color.copy(alpha = 0.4f), RoundedCornerShape(20.dp))
-                .padding(horizontal = 8.dp, vertical = 3.dp)
-        ) {
-            Text(texto, fontSize = 11.sp, color = color, fontWeight = FontWeight.SemiBold)
-        }
-    }
-}
-
-@Composable
-fun TableHeader(text: String, modifier: Modifier = Modifier) {
-    Text(
-        text = text.uppercase(),
-        modifier = modifier,
-        fontSize = 10.sp,
-        fontWeight = FontWeight.Bold,
-        color = Color.White.copy(alpha = 0.5f),
-        letterSpacing = 0.8.sp
-    )
 }
