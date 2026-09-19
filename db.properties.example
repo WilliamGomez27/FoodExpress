@@ -1,0 +1,10 @@
+# Plantilla de configuración de Base de Datos
+# Copia este archivo a src/androidMain/assets/db.properties
+# o a src/desktopMain/resources/db.properties y llena tus datos
+
+db.host=127.0.0.1
+db.port=3306
+db.name=SuperMarket_db
+db.user=tu_usuario
+db.password=tu_password
+db.ssl=false

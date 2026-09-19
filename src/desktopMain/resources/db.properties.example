@@ -1,0 +1,14 @@
+# ============================================================
+# TEMPLATE — Configuración de Base de Datos — FastFoodApp Desktop
+# ============================================================
+# 1. Copia este archivo como: db.properties
+# 2. Rellena los valores con tus credenciales reales
+# 3. NUNCA subas db.properties al repositorio (ya está en .gitignore)
+# ============================================================
+
+db.host=127.0.0.1
+db.port=3306
+db.name=SuperMarket_db
+db.user=root
+db.password=admin123
+db.ssl=false

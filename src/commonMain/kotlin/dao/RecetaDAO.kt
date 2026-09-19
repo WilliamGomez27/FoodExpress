@@ -2,13 +2,15 @@ package FastFoodApp.dao
 
 import FastFoodApp.database.ConexionDB
 import FastFoodApp.model.RecetaIngrediente
+import FastFoodApp.utils.AppLogger
+import java.sql.Connection
 import java.sql.SQLException
 
 class RecetaDAO {
 
     fun obtenerReceta(idProductoVenta: Int): List<RecetaIngrediente> {
         val conexion = ConexionDB.getConexion() ?: run {
-            println("✗ [RecetaDAO] Sin conexión para obtenerReceta")
+            AppLogger.error("RecetaDAO", "Sin conexión para obtenerReceta")
             return emptyList()
         }
         val lista = mutableListOf<RecetaIngrediente>()
@@ -21,46 +23,46 @@ class RecetaDAO {
             ORDER BY p.nombre ASC
         """
         return try {
-            conexion.prepareStatement(sql).use { stmt ->
-                stmt.setInt(1, idProductoVenta)
-                val rs = stmt.executeQuery()
-                while (rs.next()) {
-                    lista.add(
-                        RecetaIngrediente(
-                            id               = rs.getInt("id"),
-                            idProductoVenta  = rs.getInt("id_producto_venta"),
-                            idProducto       = rs.getInt("id_producto"),
-                            nombreMateria    = rs.getString("nombre_materia"),
-                            cantidad         = rs.getDouble("cantidad"),
-                            unidad           = rs.getString("unidad")
+            conexion.use { conn ->
+                conn.prepareStatement(sql).use { stmt ->
+                    stmt.setInt(1, idProductoVenta)
+                    val rs = stmt.executeQuery()
+                    while (rs.next()) {
+                        lista.add(
+                            RecetaIngrediente(
+                                id               = rs.getInt("id"),
+                                idProductoVenta  = rs.getInt("id_producto_venta"),
+                                idProducto       = rs.getInt("id_producto"),
+                                nombreMateria    = rs.getString("nombre_materia"),
+                                cantidad         = rs.getDouble("cantidad"),
+                                unidad           = rs.getString("unidad")
+                            )
                         )
-                    )
+                    }
                 }
             }
-            println("✓ [RecetaDAO] ${lista.size} ingredientes para producto_venta #$idProductoVenta")
+            AppLogger.info("RecetaDAO", "${lista.size} ingredientes para producto_venta #$idProductoVenta")
             lista
         } catch (e: SQLException) {
-            println("✗ [RecetaDAO] Error en obtenerReceta: ${e.message}")
+            AppLogger.error("RecetaDAO", "Error en obtenerReceta: ${e.message}")
             emptyList()
         }
     }
 
     fun guardarReceta(idProductoVenta: Int, ingredientes: List<RecetaIngrediente>): Boolean {
         val conexion = ConexionDB.getConexion() ?: run {
-            println("✗ [RecetaDAO] Sin conexión para guardarReceta")
+            AppLogger.error("RecetaDAO", "Sin conexión para guardarReceta")
             return false
         }
         return try {
             conexion.autoCommit = false
 
-            // 1. Borrar ingredientes anteriores
             val sqlDelete = "DELETE FROM receta_ingredientes WHERE id_producto_venta = ?"
             conexion.prepareStatement(sqlDelete).use { stmt ->
                 stmt.setInt(1, idProductoVenta)
                 stmt.executeUpdate()
             }
 
-            // 2. Insertar nuevos ingredientes
             val sqlInsert = """
                 INSERT INTO receta_ingredientes (id_producto_venta, id_producto, cantidad, unidad)
                 VALUES (?, ?, ?, ?)
@@ -77,50 +79,83 @@ class RecetaDAO {
             }
 
             conexion.commit()
-            println("✓ [RecetaDAO] Receta guardada: ${ingredientes.size} ingredientes para producto_venta #$idProductoVenta")
+            AppLogger.info("RecetaDAO", "Receta guardada: ${ingredientes.size} ingredientes para #$idProductoVenta")
             true
         } catch (e: SQLException) {
             try { conexion.rollback() } catch (_: SQLException) {}
-            println("✗ [RecetaDAO] Error en guardarReceta: ${e.message}")
+            AppLogger.error("RecetaDAO", "Error en guardarReceta: ${e.message}")
             false
         } finally {
             try { conexion.autoCommit = true } catch (_: SQLException) {}
+            conexion.close()
         }
     }
 
+    /**
+     * Descuenta el stock de materia prima por receta.
+     *
+     * FIX SEC-006: Verifica stock suficiente ANTES de descontar con SELECT FOR UPDATE.
+     * Si algún ingrediente no tiene stock, retorna false y VentaDAO hace rollback.
+     */
     fun descontarStockPorReceta(
         idProductoVenta: Int,
         cantidadVendida: Int,
-        conexion: java.sql.Connection
+        conexion: Connection
     ): Boolean {
         val ingredientes = obtenerRecetaConConexion(idProductoVenta, conexion)
         if (ingredientes.isEmpty()) {
-            println("⚠ [RecetaDAO] Sin receta para producto_venta #$idProductoVenta — sin descuento de stock")
+            AppLogger.warn("RecetaDAO", "Sin receta para #$idProductoVenta — sin descuento de stock")
             return true
         }
 
+        // ── FIX SEC-006: Verificar stock ANTES de descontar ──
+        val sqlCheck = "SELECT nombre, stock_actual FROM productos WHERE id_producto = ? FOR UPDATE"
+        for (ing in ingredientes) {
+            val totalDescontar = ing.cantidad * cantidadVendida
+            try {
+                conexion.prepareStatement(sqlCheck).use { stmt ->
+                    stmt.setInt(1, ing.idProducto)
+                    val rs = stmt.executeQuery()
+                    if (rs.next()) {
+                        val stockActual = rs.getDouble("stock_actual")
+                        val nombre = rs.getString("nombre")
+                        if (stockActual < totalDescontar) {
+                            AppLogger.error(
+                                "RecetaDAO",
+                                "Stock insuficiente de '$nombre': disponible=$stockActual, requerido=$totalDescontar"
+                            )
+                            return false // VentaDAO hará rollback
+                        }
+                    }
+                }
+            } catch (e: SQLException) {
+                AppLogger.error("RecetaDAO", "Error verificando stock #${ing.idProducto}: ${e.message}")
+                return false
+            }
+        }
+
+        // Stock suficiente — proceder con el descuento
         val sqlUpdate = "UPDATE productos SET stock_actual = stock_actual - ? WHERE id_producto = ?"
         return try {
             conexion.prepareStatement(sqlUpdate).use { stmt ->
                 ingredientes.forEach { ing ->
-                    val totalDescontar = ing.cantidad * cantidadVendida
-                    stmt.setDouble(1, totalDescontar)
+                    stmt.setDouble(1, ing.cantidad * cantidadVendida)
                     stmt.setInt(2, ing.idProducto)
                     stmt.addBatch()
                 }
                 stmt.executeBatch()
             }
-            println("✓ [RecetaDAO] Stock de materia prima descontado para ${ingredientes.size} ingredientes")
+            AppLogger.info("RecetaDAO", "Stock descontado para ${ingredientes.size} ingredientes")
             true
         } catch (e: SQLException) {
-            println("✗ [RecetaDAO] Error al descontar stock: ${e.message}")
+            AppLogger.error("RecetaDAO", "Error al descontar stock: ${e.message}")
             false
         }
     }
 
     private fun obtenerRecetaConConexion(
         idProductoVenta: Int,
-        conexion: java.sql.Connection
+        conexion: Connection
     ): List<RecetaIngrediente> {
         val lista = mutableListOf<RecetaIngrediente>()
         val sql = """
@@ -149,7 +184,7 @@ class RecetaDAO {
             }
             lista
         } catch (e: SQLException) {
-            println("✗ [RecetaDAO] Error en obtenerRecetaConConexion: ${e.message}")
+            AppLogger.error("RecetaDAO", "Error en obtenerRecetaConConexion: ${e.message}")
             emptyList()
         }
     }

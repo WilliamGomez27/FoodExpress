@@ -34,3 +34,11 @@ captures/
 
 ### Extras ###
 *.bak
+
+### SEGURIDAD — Archivos con credenciales (NUNCA subir al repo) ###
+db.properties
+**/assets/db.properties
+*.properties.local
+.env
+.env.*
+credenciales.properties

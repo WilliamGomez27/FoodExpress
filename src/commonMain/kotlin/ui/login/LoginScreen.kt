@@ -41,11 +41,13 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
     val dao = remember { UsuarioDAO() }
 
     LaunchedEffect(Unit) {
-        val credenciales = CacheManager.cargarCredenciales()
-        if (credenciales != null) {
-            username = credenciales.first
-            password = credenciales.second
+        // FIX SEC-003: Solo cargamos el username — password NUNCA se guarda en disco
+        CacheManager.migrarArchivoLegacy()  // Elimina archivo viejo si existe
+        val usuarioCacheado = CacheManager.cargarUsuario()
+        if (usuarioCacheado != null) {
+            username = usuarioCacheado
             rememberMe = true
+            // password queda vacío — el usuario lo escribe siempre
         }
     }
 
@@ -179,20 +181,22 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
                             }
                             
                             isLoading = false
-                            result.onSuccess { usuario ->
-                                if (usuario != null) {
+                            result.onSuccess { sesion ->
+                                if (sesion != null) {
+                                    // FIX SEC-003: Solo guardar username, NUNCA la contraseña
                                     if (rememberMe) {
-                                        CacheManager.guardarCredenciales(username, password)
+                                        CacheManager.guardarUsuario(username)
                                     } else {
-                                        CacheManager.limpiarCredenciales()
+                                        CacheManager.limpiarSesion()
                                     }
-                                    SessionInfo.usuarioActual = usuario
+                                    // FIX SEC-007: sesion es UsuarioSesion (sin campo contrasena)
+                                    SessionInfo.usuarioActual = sesion
                                     onLoginSuccess()
                                 } else {
                                     errorMessage = "Credenciales incorrectas."
                                 }
                             }.onFailure { error ->
-                                errorMessage = "Error: ${error.message}"
+                                errorMessage = "Error de conexión. Verifica la red."
                             }
                         }
                     },
