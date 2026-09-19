@@ -56,10 +56,32 @@ kotlin {
             }
         }
 
+        val androidInstrumentedTest by getting {
+            dependencies {
+                implementation(kotlin("test-junit"))
+                implementation("androidx.test.ext:junit:1.2.1")
+                implementation("androidx.test.espresso:espresso-core:3.6.1")
+                implementation("androidx.compose.ui:ui-test-junit4:1.7.0")
+                implementation("androidx.compose.ui:ui-test-manifest:1.7.0")
+            }
+        }
+
         val desktopMain by getting {
             dependencies {
                 implementation(compose.desktop.currentOs)
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.9.0")
+            }
+        }
+
+        val desktopTest by getting {
+            dependencies {
+                // Testcontainers — MySQL real en Docker para integration tests
+                implementation("org.testcontainers:testcontainers:1.20.4")
+                implementation("org.testcontainers:mysql:1.20.4")
+                // MockK — Mocking para Kotlin
+                implementation("io.mockk:mockk:1.13.12")
+                // SLF4J para suprimir warnings de Testcontainers en tests
+                implementation("org.slf4j:slf4j-simple:2.0.13")
             }
         }
     }
@@ -75,6 +97,7 @@ android {
         targetSdk = 37
         versionCode = 1
         versionName = "1.0"
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     compileOptions {
@@ -94,4 +117,8 @@ compose.desktop {
         mainClass = "FastFoodApp.MainKt"
         jvmArgs += listOf("--enable-native-access=ALL-UNNAMED")
     }
+}
+
+dependencies {
+    debugImplementation("androidx.compose.ui:ui-test-manifest:1.7.0")
 }

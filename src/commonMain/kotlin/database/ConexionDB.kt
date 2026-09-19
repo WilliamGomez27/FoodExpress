@@ -1,60 +1,71 @@
 package FastFoodApp.database
 
+import FastFoodApp.utils.AppLogger
 import java.sql.Connection
 import java.sql.DriverManager
 import java.sql.SQLException
 
+/**
+ * Singleton de conexión a MySQL.
+ *
+ * SEGURIDAD FIX SEC-002: Las credenciales se leen de [DbConfig].
+ * SEGURIDAD FIX SEC-004: SSL configurable via DbConfig.usarSSL.
+ */
 object ConexionDB {
-    private val isAndroid: Boolean by lazy {
-        try {
-            Class.forName("android.os.Build")
-            true
-        } catch (_: ClassNotFoundException) {
-            false
-        }
-    }
-
-    /**
-     * Host por defecto:
-     * - En Android (Emulador): 10.0.2.2 para comunicarse con MySQL corriendo en la PC local.
-     * - En Desktop JVM: localhost
-     */
-    var host: String = if (isAndroid) "192.168.40.58" else "localhost"
-    var puerto: Int = 3306
-    var nombreDB: String = "SuperMarket_db"
-    var usuario: String = "root"
-    var password: String = ""
-
-    private val urlConnection: String
-        get() = "jdbc:mysql://$host:$puerto/$nombreDB?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&connectTimeout=5000&socketTimeout=5000"
 
     @Volatile
     private var conexion: Connection? = null
 
+    /**
+     * Obtiene la conexión activa o crea una nueva si está cerrada.
+     */
     @Synchronized
     fun getConexion(): Connection? {
-        try {
+        DbConfig.verificar()
+
+        return try {
             if (conexion == null || conexion!!.isClosed) {
                 // Registrar driver clásico para la versión 5.1.x
                 Class.forName("com.mysql.jdbc.Driver")
-                conexion = DriverManager.getConnection(urlConnection, usuario, password)
-                println("✓ [DB] Conexión establecida con éxito en $host:$puerto")
+
+                val ssl = if (DbConfig.usarSSL) "true" else "false"
+                val jdbcUrl = "jdbc:mysql://${DbConfig.host}:${DbConfig.puerto}/${DbConfig.nombreDB}" +
+                        "?useSSL=$ssl" +
+                        "&serverTimezone=UTC" +
+                        "&allowPublicKeyRetrieval=${!DbConfig.usarSSL}" +
+                        "&characterEncoding=UTF-8" +
+                        "&connectTimeout=5000" +
+                        "&socketTimeout=5000"
+
+                conexion = DriverManager.getConnection(jdbcUrl, DbConfig.usuario, DbConfig.password)
+                AppLogger.info("ConexionDB", "Conexión establecida con éxito en ${DbConfig.host}:${DbConfig.puerto}")
             }
+            conexion
+        } catch (e: ClassNotFoundException) {
+            AppLogger.error("ConexionDB", "Driver MySQL no encontrado: ${e.message}")
+            null
+        } catch (e: SQLException) {
+            AppLogger.error("ConexionDB", "Error SQL al conectar: ${e.message}")
+            null
         } catch (e: Throwable) {
-            System.err.println("✗ [DB] Error fatal de conexión: ${e.message} - ${e::class.simpleName}")
+            AppLogger.error("ConexionDB", "Error Fatal al conectar: ${e.message} - ${e::class.simpleName}")
             throw e
         }
-        return conexion
     }
 
     @Synchronized
     fun cerrarConexion() {
-        conexion?.let {
-            if (!it.isClosed) {
-                it.close()
-                println("✓ [DB] Conexión cerrada correctamente")
+        try {
+            conexion?.let {
+                if (!it.isClosed) {
+                    it.close()
+                    AppLogger.info("ConexionDB", "Conexión cerrada correctamente")
+                }
             }
+        } catch (e: Exception) {
+            AppLogger.error("ConexionDB", "Error al cerrar conexión: ${e.message}")
+        } finally {
+            conexion = null
         }
-        conexion = null
     }
 }

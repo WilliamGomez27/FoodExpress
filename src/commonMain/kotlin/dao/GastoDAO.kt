@@ -2,6 +2,7 @@ package FastFoodApp.dao
 
 import FastFoodApp.database.ConexionDB
 import FastFoodApp.model.Gasto
+import FastFoodApp.utils.AppLogger
 import java.sql.SQLException
 
 class GastoDAO {
@@ -10,13 +11,15 @@ class GastoDAO {
         val conexion = ConexionDB.getConexion() ?: return false
         val sql = "INSERT INTO gastos (descripcion, monto, fecha_hora) VALUES (?, ?, NOW())"
         return try {
-            conexion.prepareStatement(sql).use { stmt ->
-                stmt.setString(1, gasto.descripcion)
-                stmt.setDouble(2, gasto.monto)
-                stmt.executeUpdate() > 0
+            conexion.use { conn ->
+                conn.prepareStatement(sql).use { stmt ->
+                    stmt.setString(1, gasto.descripcion)
+                    stmt.setDouble(2, gasto.monto)
+                    stmt.executeUpdate() > 0
+                }
             }
         } catch (e: SQLException) {
-            println("✗ [GastoDAO] Error al registrar gasto: ${e.message}")
+            AppLogger.error("GastoDAO", "Error al registrar gasto: ${e.message}")
             false
         }
     }
@@ -31,22 +34,24 @@ class GastoDAO {
         """
         val lista = mutableListOf<Gasto>()
         return try {
-            conexion.prepareStatement(sql).use { stmt ->
-                val rs = stmt.executeQuery()
-                while (rs.next()) {
-                    lista.add(
-                        Gasto(
-                            idGasto = rs.getInt("id_gasto"),
-                            descripcion = rs.getString("descripcion"),
-                            monto = rs.getDouble("monto"),
-                            fechaHora = rs.getString("fecha")
+            conexion.use { conn ->
+                conn.prepareStatement(sql).use { stmt ->
+                    val rs = stmt.executeQuery()
+                    while (rs.next()) {
+                        lista.add(
+                            Gasto(
+                                idGasto = rs.getInt("id_gasto"),
+                                descripcion = rs.getString("descripcion"),
+                                monto = rs.getDouble("monto"),
+                                fechaHora = rs.getString("fecha")
+                            )
                         )
-                    )
+                    }
                 }
             }
             lista
         } catch (e: SQLException) {
-            println("✗ [GastoDAO] Error al obtener gastos: ${e.message}")
+            AppLogger.error("GastoDAO", "Error al obtener gastos: ${e.message}")
             emptyList()
         }
     }
