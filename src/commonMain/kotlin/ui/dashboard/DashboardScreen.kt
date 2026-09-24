@@ -86,7 +86,7 @@ fun PantallaInicio(onNavegar: (String) -> Unit, scope: CoroutineScope) {
                 ) {
                     MetricCard(
                         title = "Ventas Totales",
-                        value = "Q${resumen?.totalMontoVentas ?: "0.0"}",
+                        value = "COP ${resumen?.totalMontoVentas ?: "0.0"}",
                         modifier = Modifier.weight(1f)
                     )
                     MetricCard(
@@ -201,7 +201,7 @@ fun PantallaInicio(onNavegar: (String) -> Unit, scope: CoroutineScope) {
                                 )
                             }
                             Text(
-                                text = "Q${venta.totalVenta}",
+                                text = "COP ${venta.totalVenta}",
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 16.sp,
                                 color = AppColors.Success

@@ -1,5 +1,6 @@
 package FastFoodApp.viewmodel
 
+import FastFoodApp.dao.ProductoVentaDAO
 import FastFoodApp.model.Producto
 import FastFoodApp.model.ProductoVenta
 import FastFoodApp.model.RecetaIngrediente
@@ -10,7 +11,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class RecetaViewModel(private val scope: CoroutineScope) {
 
@@ -43,10 +46,46 @@ class RecetaViewModel(private val scope: CoroutineScope) {
     fun cargarDatos() {
         scope.launch {
             cargando = true
-            productosTerminados = CatalogoVentas.obtenerCatalogo()
+            val dao = ProductoVentaDAO()
+            productosTerminados = withContext(Dispatchers.IO) { dao.obtenerTodos() }
             materiasPrimas      = inventarioRepo.obtenerProductos()
             if (productoSeleccionado == null && productosTerminados.isNotEmpty()) {
                 seleccionarProducto(productosTerminados.first())
+            }
+            cargando = false
+        }
+    }
+
+    fun actualizarPrecioProductoVenta(id: Int, nuevoPrecio: Double) {
+        scope.launch {
+            cargando = true
+            val dao = ProductoVentaDAO()
+            val exito = withContext(Dispatchers.IO) { dao.actualizarPrecio(id, nuevoPrecio) }
+            if (exito) {
+                mensajeSnackbar = "✅ Precio actualizado correctamente a COP %.2f".format(nuevoPrecio)
+                productosTerminados = withContext(Dispatchers.IO) { dao.obtenerTodos() }
+                productoSeleccionado = productosTerminados.find { it.idProductoVenta == id } ?: productoSeleccionado
+            } else {
+                mensajeSnackbar = "❌ Error al actualizar el precio"
+            }
+            cargando = false
+        }
+    }
+
+    fun crearProductoTerminado(nombre: String, precio: Double, categoria: String) {
+        scope.launch {
+            cargando = true
+            val dao = ProductoVentaDAO()
+            val nuevo = ProductoVenta(0, nombre, precio, categoria)
+            val idGenerado = withContext(Dispatchers.IO) { dao.insertar(nuevo) }
+            
+            if (idGenerado != -1) {
+                mensajeSnackbar = "✅ Nuevo producto '$nombre' creado."
+                productosTerminados = withContext(Dispatchers.IO) { dao.obtenerTodos() }
+                val recienCreado = productosTerminados.find { it.idProductoVenta == idGenerado }
+                if (recienCreado != null) seleccionarProducto(recienCreado)
+            } else {
+                mensajeSnackbar = "❌ Error al crear el producto"
             }
             cargando = false
         }

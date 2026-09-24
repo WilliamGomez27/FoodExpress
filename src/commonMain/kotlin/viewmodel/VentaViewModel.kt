@@ -1,10 +1,10 @@
 package FastFoodApp.viewmodel
 
+import FastFoodApp.dao.ProductoVentaDAO
 import FastFoodApp.dao.VentaDAO
 import FastFoodApp.model.ItemVenta
 import FastFoodApp.model.ProductoVenta
 import FastFoodApp.model.Venta
-import FastFoodApp.repository.CatalogoVentas
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -40,7 +40,9 @@ class VentasViewModel(private val scope: CoroutineScope) {
     fun cargarDatos() {
         scope.launch {
             cargando = true
-            catalogoProductos = CatalogoVentas.obtenerCatalogo()
+            val dao = ProductoVentaDAO()
+            // Traer catálogo de la Base de Datos real
+            catalogoProductos = withContext(Dispatchers.IO) { dao.obtenerTodos() }
             historialVentas   = withContext(Dispatchers.IO) { ventasDAO.obtenerUltimasVentas() }
             cargando = false
         }
@@ -81,9 +83,10 @@ class VentasViewModel(private val scope: CoroutineScope) {
             val id = withContext(Dispatchers.IO) { ventasDAO.registrarVenta(carrito) }
             if (id != -1) {
                 ultimaVentaId = id
-                mensajeSnackbar = "✅ Venta #$id registrada — Total: Q %.2f".format(totalCarrito)
+                mensajeSnackbar = "✅ Venta #$id registrada — Total: COP %.2f".format(totalCarrito)
                 limpiarCarrito()
-                catalogoProductos = CatalogoVentas.obtenerCatalogo()
+                val dao = ProductoVentaDAO()
+                catalogoProductos = withContext(Dispatchers.IO) { dao.obtenerTodos() }
                 historialVentas   = withContext(Dispatchers.IO) { ventasDAO.obtenerUltimasVentas() }
             } else {
                 mensajeSnackbar = "❌ Error al procesar la venta"

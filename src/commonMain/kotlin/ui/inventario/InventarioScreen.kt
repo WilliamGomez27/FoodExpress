@@ -84,7 +84,7 @@ fun PantallaInventario() {
                 )
                 StatCard(
                     titulo = "VALOR TOTAL EST.",
-                    valor  = "Q %.2f".format(vm.productos.sumOf { it.precioVenta * it.stockActual }),
+                    valor  = "COP %.2f".format(vm.productos.sumOf { it.precioVenta * it.stockActual }),
                     color  = AppColors.Success,
                     modifier = Modifier.weight(1f)
                 )

@@ -68,7 +68,7 @@ fun ProductoFila(producto: Producto, isSelected: Boolean, onClick: () -> Unit) {
         )
 
         Text(
-            text = "Q%.2f".format(producto.precioVenta),
+            text = "COP %.2f".format(producto.precioVenta),
             modifier = Modifier.weight(1.2f),
             fontSize = 13.sp,
             color = AppColors.TextPrimary

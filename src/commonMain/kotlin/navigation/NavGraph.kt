@@ -4,6 +4,7 @@ import FastFoodApp.theme.AppColors
 import FastFoodApp.theme.AppTheme
 import FastFoodApp.ui.dashboard.PantallaInicio
 import FastFoodApp.ui.gastos.PantallaGastos
+import FastFoodApp.ui.info.PantallaInfo
 import FastFoodApp.ui.inventario.PantallaInventario
 import FastFoodApp.ui.login.LoginScreen
 import FastFoodApp.ui.recetas.PantallaRecetas
@@ -27,6 +28,7 @@ import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.runtime.*
@@ -97,13 +99,14 @@ fun AppFastFood() {
         
         val menuItems = mutableListOf(
             MenuItem("Inicio",     Icons.Default.Home,                "Inicio"),
-            MenuItem("Ventas",     Icons.Default.ShoppingCart,        "Ventas")
+            MenuItem("Ventas",     Icons.Default.ShoppingCart,        "Ventas"),
+            MenuItem("Recetas",    Icons.Default.Build,               "Recetas"), // Abierto a todos
+            MenuItem("Acerca de",  Icons.Default.Info,                "Info")
         )
         
         // Agregar opciones extra solo para el Admin
         if (isAdmin) {
             menuItems.add(MenuItem("Inventario", Icons.AutoMirrored.Filled.List,    "Inventario"))
-            menuItems.add(MenuItem("Recetas",    Icons.Default.Build,               "Recetas"))
             menuItems.add(MenuItem("Gastos",     Icons.Default.Star,                "Gastos"))
             menuItems.add(MenuItem("Reportes",   Icons.Default.DateRange,           "Reportes"))
         }
@@ -261,6 +264,7 @@ private fun ContenidoPantalla(
         "Recetas"    -> PantallaRecetas()
         "Gastos"     -> PantallaGastos(scope)
         "Reportes"   -> PantallaReportes(scope)
+        "Info"       -> PantallaInfo()
         else         -> PantallaInicio(onNavegar = onNavegar, scope = scope)
     }
 }

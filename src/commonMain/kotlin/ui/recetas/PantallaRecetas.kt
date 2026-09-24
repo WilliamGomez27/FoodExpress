@@ -11,7 +11,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -32,6 +34,14 @@ fun PantallaRecetas() {
     val scope         = rememberCoroutineScope()
     val vm            = remember { RecetaViewModel(scope) }
     val scaffoldState = rememberScaffoldState()
+    
+    var productoEditandoPrecio by remember { mutableStateOf<ProductoVenta?>(null) }
+    var nuevoPrecioInput by remember { mutableStateOf("") }
+    
+    var mostrarDialogoNuevoProducto by remember { mutableStateOf(false) }
+    var nuevoProductoNombre by remember { mutableStateOf("") }
+    var nuevoProductoPrecio by remember { mutableStateOf("") }
+    var nuevoProductoCategoria by remember { mutableStateOf("") }
 
     LaunchedEffect(Unit) { vm.cargarDatos() }
 
@@ -54,7 +64,7 @@ fun PantallaRecetas() {
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Column {
+                Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = "Recetas de Producción",
                         fontSize = 26.sp,
@@ -67,46 +77,197 @@ fun PantallaRecetas() {
                         color = AppColors.TextMuted
                     )
                 }
-                if (vm.cargando) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(28.dp),
-                        strokeWidth = 2.dp,
-                        color = AppColors.Primary
-                    )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (vm.cargando) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(28.dp),
+                            strokeWidth = 2.dp,
+                            color = AppColors.Primary
+                        )
+                        Spacer(modifier = Modifier.width(16.dp))
+                    }
+                    Button(
+                        onClick = { mostrarDialogoNuevoProducto = true },
+                        colors = ButtonDefaults.buttonColors(backgroundColor = AppColors.Primary),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Icon(Icons.Default.Add, contentDescription = "Nuevo Producto", tint = AppColors.White, modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("Nuevo Producto", color = AppColors.White, fontSize = 13.sp)
+                    }
                 }
             }
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            Row(
-                modifier = Modifier.fillMaxSize(),
-                horizontalArrangement = Arrangement.spacedBy(20.dp)
-            ) {
-                PanelProductosTerminados(
-                    productos          = vm.productosTerminados,
-                    seleccionado       = vm.productoSeleccionado,
-                    onSeleccionar      = { vm.seleccionarProducto(it) },
-                    modifier           = Modifier.width(260.dp).fillMaxHeight()
-                )
+            BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+                if (maxWidth >= 800.dp) {
+                    Row(
+                        modifier = Modifier.fillMaxSize(),
+                        horizontalArrangement = Arrangement.spacedBy(20.dp)
+                    ) {
+                        PanelProductosTerminados(
+                            productos          = vm.productosTerminados,
+                            seleccionado       = vm.productoSeleccionado,
+                            onSeleccionar      = { vm.seleccionarProducto(it) },
+                            onEditarPrecio     = { prod -> 
+                                productoEditandoPrecio = prod
+                                nuevoPrecioInput = prod.precioVenta.toString()
+                            },
+                            modifier           = Modifier.width(300.dp).fillMaxHeight()
+                        )
 
-                PanelEditorReceta(
-                    productoSeleccionado     = vm.productoSeleccionado,
-                    ingredientes             = vm.ingredientes,
-                    materiasPrimas           = vm.materiasPrimas,
-                    materiaPrimaSeleccionada = vm.materiaPrimaSeleccionada,
-                    onMateriaPrimaChange     = { vm.materiaPrimaSeleccionada = it },
-                    cantidadInput            = vm.cantidadInput,
-                    onCantidadChange         = { vm.cantidadInput = it },
-                    unidadSeleccionada       = vm.unidadSeleccionada,
-                    onUnidadChange           = { vm.unidadSeleccionada = it },
-                    unidades                 = vm.unidades,
-                    onAgregarIngrediente     = { vm.agregarIngrediente() },
-                    onEliminarIngrediente    = { vm.eliminarIngrediente(it) },
-                    onGuardarReceta          = { vm.guardarReceta() },
-                    modifier                 = Modifier.weight(1f).fillMaxHeight()
-                )
+                        PanelEditorReceta(
+                            productoSeleccionado     = vm.productoSeleccionado,
+                            ingredientes             = vm.ingredientes,
+                            materiasPrimas           = vm.materiasPrimas,
+                            materiaPrimaSeleccionada = vm.materiaPrimaSeleccionada,
+                            onMateriaPrimaChange     = { vm.materiaPrimaSeleccionada = it },
+                            cantidadInput            = vm.cantidadInput,
+                            onCantidadChange         = { vm.cantidadInput = it },
+                            unidadSeleccionada       = vm.unidadSeleccionada,
+                            onUnidadChange           = { vm.unidadSeleccionada = it },
+                            unidades                 = vm.unidades,
+                            onAgregarIngrediente     = { vm.agregarIngrediente() },
+                            onEliminarIngrediente    = { vm.eliminarIngrediente(it) },
+                            onGuardarReceta          = { vm.guardarReceta() },
+                            modifier                 = Modifier.weight(1f).fillMaxHeight()
+                        )
+                    }
+                } else {
+                    val scrollState = rememberScrollState()
+                    Column(
+                        modifier = Modifier.fillMaxSize().verticalScroll(scrollState),
+                        verticalArrangement = Arrangement.spacedBy(20.dp)
+                    ) {
+                        PanelProductosTerminados(
+                            productos          = vm.productosTerminados,
+                            seleccionado       = vm.productoSeleccionado,
+                            onSeleccionar      = { vm.seleccionarProducto(it) },
+                            onEditarPrecio     = { prod -> 
+                                productoEditandoPrecio = prod
+                                nuevoPrecioInput = prod.precioVenta.toString()
+                            },
+                            modifier           = Modifier.fillMaxWidth().height(350.dp)
+                        )
+
+                        PanelEditorReceta(
+                            productoSeleccionado     = vm.productoSeleccionado,
+                            ingredientes             = vm.ingredientes,
+                            materiasPrimas           = vm.materiasPrimas,
+                            materiaPrimaSeleccionada = vm.materiaPrimaSeleccionada,
+                            onMateriaPrimaChange     = { vm.materiaPrimaSeleccionada = it },
+                            cantidadInput            = vm.cantidadInput,
+                            onCantidadChange         = { vm.cantidadInput = it },
+                            unidadSeleccionada       = vm.unidadSeleccionada,
+                            onUnidadChange           = { vm.unidadSeleccionada = it },
+                            unidades                 = vm.unidades,
+                            onAgregarIngrediente     = { vm.agregarIngrediente() },
+                            onEliminarIngrediente    = { vm.eliminarIngrediente(it) },
+                            onGuardarReceta          = { vm.guardarReceta() },
+                            modifier                 = Modifier.fillMaxWidth().height(500.dp)
+                        )
+                    }
+                }
             }
         }
+    }
+
+    if (productoEditandoPrecio != null) {
+        AlertDialog(
+            onDismissRequest = { productoEditandoPrecio = null },
+            title = { Text("Editar Precio de Venta", fontWeight = FontWeight.Bold) },
+            text = {
+                Column {
+                    Text("Producto: ${productoEditandoPrecio?.nombre}", fontSize = 14.sp)
+                    Spacer(modifier = Modifier.height(12.dp))
+                    OutlinedTextField(
+                        value = nuevoPrecioInput,
+                        onValueChange = { nuevoPrecioInput = it },
+                        label = { Text("Nuevo Precio (COP)") },
+                        singleLine = true
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        val precio = nuevoPrecioInput.toDoubleOrNull()
+                        if (precio != null && precio >= 0) {
+                            vm.actualizarPrecioProductoVenta(productoEditandoPrecio!!.idProductoVenta, precio)
+                            productoEditandoPrecio = null
+                        } else {
+                            vm.limpiarMensaje()
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(backgroundColor = AppColors.Success)
+                ) {
+                    Text("Actualizar", color = AppColors.White)
+                }
+            },
+            dismissButton = {
+                OutlinedButton(onClick = { productoEditandoPrecio = null }) {
+                    Text("Cancelar")
+                }
+            }
+        )
+    }
+
+    if (mostrarDialogoNuevoProducto) {
+        AlertDialog(
+            onDismissRequest = { mostrarDialogoNuevoProducto = false },
+            title = { Text("Nuevo Producto Terminado", fontWeight = FontWeight.Bold) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedTextField(
+                        value = nuevoProductoNombre,
+                        onValueChange = { nuevoProductoNombre = it },
+                        label = { Text("Nombre del Producto") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    OutlinedTextField(
+                        value = nuevoProductoPrecio,
+                        onValueChange = { nuevoProductoPrecio = it },
+                        label = { Text("Precio Venta (COP)") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    OutlinedTextField(
+                        value = nuevoProductoCategoria,
+                        onValueChange = { nuevoProductoCategoria = it },
+                        label = { Text("Categoría (ej. Comida, Bebida)") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        val precio = nuevoProductoPrecio.toDoubleOrNull() ?: 0.0
+                        val cat = nuevoProductoCategoria.ifBlank { "Comida" }
+                        if (nuevoProductoNombre.isNotBlank() && precio > 0) {
+                            vm.crearProductoTerminado(nuevoProductoNombre, precio, cat)
+                            mostrarDialogoNuevoProducto = false
+                            nuevoProductoNombre = ""
+                            nuevoProductoPrecio = ""
+                            nuevoProductoCategoria = ""
+                        } else {
+                            vm.limpiarMensaje()
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(backgroundColor = AppColors.Primary)
+                ) {
+                    Text("Crear", color = AppColors.White)
+                }
+            },
+            dismissButton = {
+                OutlinedButton(onClick = { mostrarDialogoNuevoProducto = false }) {
+                    Text("Cancelar")
+                }
+            }
+        )
     }
 }
 
@@ -115,6 +276,7 @@ private fun PanelProductosTerminados(
     productos: List<ProductoVenta>,
     seleccionado: ProductoVenta?,
     onSeleccionar: (ProductoVenta) -> Unit,
+    onEditarPrecio: (ProductoVenta) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Card(

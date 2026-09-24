@@ -146,7 +146,7 @@ fun PantallaVentas() {
 
                         Row(modifier = Modifier.fillMaxWidth()) {
                             Text("${vm.cantidadItems} items", color = AppColors.TextMuted, fontSize = 13.sp, modifier = Modifier.weight(1f))
-                            Text("Q %.2f".format(vm.totalCarrito), fontWeight = FontWeight.Bold, fontSize = 18.sp, color = AppColors.TextPrimary)
+                            Text("COP %.2f".format(vm.totalCarrito), fontWeight = FontWeight.Bold, fontSize = 18.sp, color = AppColors.TextPrimary)
                         }
                         Spacer(Modifier.height(12.dp))
 
@@ -160,7 +160,7 @@ fun PantallaVentas() {
                             if (vm.cargando) {
                                 CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp, color = AppColors.White)
                             } else {
-                                Text("Cobrar  Q %.2f".format(vm.totalCarrito), color = AppColors.White, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                                Text("Cobrar  COP %.2f".format(vm.totalCarrito), color = AppColors.White, fontWeight = FontWeight.Bold, fontSize = 15.sp)
                             }
                         }
                     }
@@ -178,7 +178,7 @@ fun CatalogoFila(producto: ProductoVenta, enCarrito: Int, onAgregar: () -> Unit)
     ) {
         Column(modifier = Modifier.weight(1f)) {
             Text(producto.nombre, fontSize = 13.sp, fontWeight = FontWeight.Medium, color = AppColors.TextPrimary)
-            Text("${producto.categoria}  •  Q%.2f".format(producto.precioVenta), fontSize = 11.sp, color = AppColors.TextMuted)
+            Text("${producto.categoria}  •  COP %.2f".format(producto.precioVenta), fontSize = 11.sp, color = AppColors.TextMuted)
         }
         if (enCarrito > 0) {
             Box(
@@ -212,7 +212,7 @@ fun CarritoFila(item: ItemVenta, onReducir: () -> Unit, onAgregar: () -> Unit, o
     ) {
         Column(modifier = Modifier.weight(1f)) {
             Text(item.productoVenta.nombre, fontSize = 13.sp, fontWeight = FontWeight.Medium, maxLines = 1)
-            Text("Q%.2f".format(item.subtotal), fontSize = 12.sp, color = AppColors.Primary, fontWeight = FontWeight.SemiBold)
+            Text("COP %.2f".format(item.subtotal), fontSize = 12.sp, color = AppColors.Primary, fontWeight = FontWeight.SemiBold)
         }
         Row(verticalAlignment = Alignment.CenterVertically) {
             SmallControlButton("-", onClick = onReducir)

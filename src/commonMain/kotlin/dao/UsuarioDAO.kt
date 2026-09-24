@@ -20,9 +20,13 @@ class UsuarioDAO {
     fun obtenerPorCredenciales(usuario: String, contrasena: String): Result<UsuarioSesion?> {
         val conexion = try {
             ConexionDB.getConexion()
-                ?: return Result.failure(Exception("El driver MySQL retornó null"))
         } catch (e: Throwable) {
             return Result.failure(Exception("Error de Conexión Fatal: ${e.message}"))
+        }
+
+        if (conexion == null) {
+            // FIX para debugging profundo en Android: saber qué excepción silenciosa mató la conexión
+            return Result.failure(Exception("El Driver MySQL retornó null silenciosamente. Asegúrate que Android tenga permisos de INTERNET y la IP sea alcanzable."))
         }
 
         // Recuperar por username solamente — el hash se verifica en código

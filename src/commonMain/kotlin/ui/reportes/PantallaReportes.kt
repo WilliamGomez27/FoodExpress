@@ -67,7 +67,7 @@ fun ArqueoDiarioView(viewModel: ReporteViewModel) {
             Spacer(Modifier.height(16.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                 TarjetaResumen("Ventas Totales", "${arqueo.totalVentas.toInt()} tickets", Modifier.weight(1f))
-                TarjetaResumen("Ingresos del Día", "Q ${String.format("%.2f", arqueo.totalMontoVentas)}", Modifier.weight(1f))
+                TarjetaResumen("Ingresos del Día", "COP ${String.format("%.2f", arqueo.totalMontoVentas)}", Modifier.weight(1f))
             }
             Spacer(Modifier.height(24.dp))
         }
@@ -106,9 +106,9 @@ fun CierreMensualView(viewModel: ReporteViewModel) {
             Text("Cierre Mensual: ${cierre.mesAnio}", fontSize = 24.sp, fontWeight = FontWeight.Bold)
             Spacer(Modifier.height(16.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                TarjetaResumen("Ingresos Brutos", "Q ${String.format("%.2f", cierre.ingresosBrutos)}", Modifier.weight(1f))
-                TarjetaResumen("Gastos Totales", "Q ${String.format("%.2f", cierre.gastosTotales)}", Modifier.weight(1f), color = AppColors.Danger)
-                TarjetaResumen("Ganancia Neta", "Q ${String.format("%.2f", cierre.gananciasNetas)}", Modifier.weight(1f), color = if (cierre.gananciasNetas >= 0) AppColors.Success else AppColors.Danger)
+                TarjetaResumen("Ingresos Brutos", "COP ${String.format("%.2f", cierre.ingresosBrutos)}", Modifier.weight(1f))
+                TarjetaResumen("Gastos Totales", "COP ${String.format("%.2f", cierre.gastosTotales)}", Modifier.weight(1f), color = AppColors.Danger)
+                TarjetaResumen("Ganancia Neta", "COP ${String.format("%.2f", cierre.gananciasNetas)}", Modifier.weight(1f), color = if (cierre.gananciasNetas >= 0) AppColors.Success else AppColors.Danger)
             }
             Spacer(Modifier.height(24.dp))
             Text("Estado de Inventario", fontSize = 18.sp, fontWeight = FontWeight.SemiBold)

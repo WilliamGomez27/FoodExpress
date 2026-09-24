@@ -196,7 +196,7 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
                                     errorMessage = "Credenciales incorrectas."
                                 }
                             }.onFailure { error ->
-                                errorMessage = "Error de conexión. Verifica la red."
+                                errorMessage = "Error de conexión: ${error.message}"
                             }
                         }
                     },

@@ -43,13 +43,13 @@ object ConexionDB {
             conexion
         } catch (e: ClassNotFoundException) {
             AppLogger.error("ConexionDB", "Driver MySQL no encontrado: ${e.message}")
-            null
+            throw Exception("ClassNotFoundException: ${e.message}")
         } catch (e: SQLException) {
             AppLogger.error("ConexionDB", "Error SQL al conectar: ${e.message}")
-            null
+            throw Exception("SQLException: ${e.message}")
         } catch (e: Throwable) {
             AppLogger.error("ConexionDB", "Error Fatal al conectar: ${e.message} - ${e::class.simpleName}")
-            throw e
+            throw Exception("Throwable: ${e.message}")
         }
     }
 

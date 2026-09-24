@@ -70,7 +70,7 @@ class VentaDAO {
             }
 
             conexion.commit()
-            AppLogger.info("VentaDAO", "Venta #$idVenta registrada: Q$total (${items.size} items)")
+            AppLogger.info("VentaDAO", "Venta #$idVenta registrada: COP $total (${items.size} items)")
             idVenta
         } catch (e: SQLException) {
             try {

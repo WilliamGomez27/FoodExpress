@@ -36,8 +36,8 @@ class ProductoVentaDAO {
         }
     }
 
-    fun insertar(producto: ProductoVenta): Boolean {
-        val conexion = ConexionDB.getConexion() ?: return false
+    fun insertar(producto: ProductoVenta): Int {
+        val conexion = ConexionDB.getConexion() ?: return -1
         val sql = "INSERT INTO productos_venta (nombre, precio_venta, categoria) VALUES (?, ?, ?)"
         return try {
             conexion.use { conn ->
@@ -45,11 +45,30 @@ class ProductoVentaDAO {
                     stmt.setString(1, producto.nombre)
                     stmt.setDouble(2, producto.precioVenta)
                     stmt.setString(3, producto.categoria)
-                    stmt.executeUpdate() > 0
+                    stmt.executeUpdate()
+                    val rs = stmt.generatedKeys
+                    if (rs.next()) rs.getInt(1) else -1
                 }
             }
         } catch (e: SQLException) {
             AppLogger.error("ProductoVentaDAO", "Error al insertar producto para venta: ${e.message}")
+            -1
+        }
+    }
+
+    fun actualizarPrecio(idProductoVenta: Int, nuevoPrecio: Double): Boolean {
+        val conexion = ConexionDB.getConexion() ?: return false
+        val sql = "UPDATE productos_venta SET precio_venta = ? WHERE id_producto_venta = ?"
+        return try {
+            conexion.use { conn ->
+                conn.prepareStatement(sql).use { stmt ->
+                    stmt.setDouble(1, nuevoPrecio)
+                    stmt.setInt(2, idProductoVenta)
+                    stmt.executeUpdate() > 0
+                }
+            }
+        } catch (e: SQLException) {
+            AppLogger.error("ProductoVentaDAO", "Error al actualizar precio de venta: ${e.message}")
             false
         }
     }

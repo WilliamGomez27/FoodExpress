@@ -94,7 +94,7 @@ fun PantallaGastos(scope: CoroutineScope) {
             ) {
                 Text("Total Gastos del Mes:", fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
                 Text(
-                    text = "Q ${String.format("%.2f", viewModel.totalGastos)}",
+                    text = "COP ${String.format("%.2f", viewModel.totalGastos)}",
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
                     color = AppColors.Danger
@@ -129,7 +129,7 @@ fun PantallaGastos(scope: CoroutineScope) {
                             Text(text = gasto.fechaHora, fontSize = 12.sp, color = Color.Gray)
                         }
                         Text(
-                            text = "-Q ${String.format("%.2f", gasto.monto)}",
+                            text = "-COP ${String.format("%.2f", gasto.monto)}",
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
                             color = AppColors.Danger

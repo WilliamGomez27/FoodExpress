@@ -8,6 +8,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
+import androidx.compose.ui.res.painterResource
 import java.util.Properties
 
 fun main() = application {
@@ -22,7 +23,8 @@ fun main() = application {
             exitApplication()
         },
         title = "Creado Por WILLIAM.GOMEZ - FastFoodApp",
-        state = windowState
+        state = windowState,
+        icon = painterResource("ic_launcher_fastfood.xml")
     ) {
         AppFastFood()
     }
