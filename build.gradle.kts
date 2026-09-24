@@ -2,9 +2,9 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     kotlin("multiplatform") version "2.1.10"
-    id("com.android.application") version "9.4.0"
-    id("org.jetbrains.compose") version "1.12.0"
-    id("org.jetbrains.kotlin.plugin.compose") version "2.4.20"
+    id("com.android.application") version "8.2.2" // Version estable de AGP
+    id("org.jetbrains.compose") version "1.7.0" // Version moderna de Compose Multiplatform
+    id("org.jetbrains.kotlin.plugin.compose") version "2.1.10" // Debe coincidir con la version de Kotlin
 }
 
 group = "org.example"
@@ -13,13 +13,13 @@ version = "1.0-SNAPSHOT"
 kotlin {
     androidTarget {
         compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_21)
+            jvmTarget.set(JvmTarget.JVM_17)
         }
     }
 
     jvm("desktop") {
         compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_21)
+            jvmTarget.set(JvmTarget.JVM_17)
         }
     }
 
@@ -75,12 +75,9 @@ kotlin {
 
         val desktopTest by getting {
             dependencies {
-                // Testcontainers — MySQL real en Docker para integration tests
                 implementation("org.testcontainers:testcontainers:1.20.4")
                 implementation("org.testcontainers:mysql:1.20.4")
-                // MockK — Mocking para Kotlin
                 implementation("io.mockk:mockk:1.13.12")
-                // SLF4J para suprimir warnings de Testcontainers en tests
                 implementation("org.slf4j:slf4j-simple:2.0.13")
             }
         }
@@ -89,20 +86,20 @@ kotlin {
 
 android {
     namespace = "com.fastfood.app"
-    compileSdk = 37
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.fastfood.app"
         minSdk = 24
-        targetSdk = 37
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     buildTypes {
