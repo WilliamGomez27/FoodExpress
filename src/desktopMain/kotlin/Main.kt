@@ -35,19 +35,11 @@ fun main() = application {
  * Si el archivo no existe, usa valores por defecto para no bloquear la app.
  */
 private fun cargarConfiguracionDB() {
-    val propsStream = object {}.javaClass.getResourceAsStream("/db.properties")
+    val propsStream = Thread.currentThread().contextClassLoader.getResourceAsStream("db.properties") 
+        ?: object {}.javaClass.getResourceAsStream("/db.properties")
 
     if (propsStream == null) {
-        System.err.println("""
-            ╔══════════════════════════════════════════════════════════╗
-            ║  ADVERTENCIA: No se encontró 'db.properties'             ║
-            ║  Se usarán valores por defecto (localhost).              ║
-            ║                                                          ║
-            ║  Para configuración personalizada crea:                  ║
-            ║  src/desktopMain/resources/db.properties                 ║
-            ╚══════════════════════════════════════════════════════════╝
-        """.trimIndent())
-        
+        System.err.println("ADVERTENCIA: No se encontró 'db.properties' en los recursos. Usando localhost por defecto.")
         DbConfig.configure(
             host = "localhost",
             puerto = 3306,
@@ -70,5 +62,5 @@ private fun cargarConfiguracionDB() {
         usarSSL  = props.getProperty("db.ssl", "false").toBoolean()
     )
 
-    AppLogger.info("Main", "Configuración de BD cargada desde db.properties")
+    AppLogger.info("Main", "Configuración de BD cargada desde db.properties en Desktop (Host: ${DbConfig.host})")
 }
