@@ -12,5 +12,7 @@ data class UsuarioSesion(
     val idUsuario: Int,
     val nombre: String,
     val usuario: String,
-    val rol: String = "cajero"
+    val rol: String = "cajero",
+    val email: String = "",
+    val whatsapp: String = ""
 )

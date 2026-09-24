@@ -26,6 +26,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+import FastFoodApp.model.Usuario
+import kotlinx.coroutines.CoroutineScope
+
 @Composable
 fun LoginScreen(onLoginSuccess: () -> Unit) {
     var username by remember { mutableStateOf("") }
@@ -36,6 +39,9 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
     var infoMessage by remember { mutableStateOf("") }
+
+    var showRegisterDialog by remember { mutableStateOf(false) }
+    var showRecoveryDialog by remember { mutableStateOf(false) }
 
     val scope = rememberCoroutineScope()
     val dao = remember { UsuarioDAO() }
@@ -146,9 +152,7 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
                         Text(text = "Recordarme", fontSize = 12.sp, color = AppColors.TextMuted)
                     }
 
-                    TextButton(onClick = { 
-                        infoMessage = "Contacta al administrador (admin) para recuperar credenciales."
-                    }) {
+                    TextButton(onClick = { showRecoveryDialog = true }) {
                         Text("¿Olvidaste tu contraseña?", fontSize = 12.sp, color = AppColors.Primary)
                     }
                 }
@@ -216,7 +220,194 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
                         Text("Ingresar", fontWeight = FontWeight.Bold)
                     }
                 }
+                Spacer(modifier = Modifier.height(16.dp))
+
+                TextButton(onClick = { showRegisterDialog = true }) {
+                    Text("¿No tienes cuenta? Regístrate aquí", fontSize = 13.sp, color = AppColors.TextMuted)
+                }
             }
         }
     }
+
+    if (showRegisterDialog) {
+        DialogoRegistro(
+            dao = dao,
+            scope = scope,
+            onDismiss = { showRegisterDialog = false }
+        )
+    }
+
+    if (showRecoveryDialog) {
+        DialogoRecuperacion(
+            dao = dao,
+            scope = scope,
+            onDismiss = { showRecoveryDialog = false }
+        )
+    }
+}
+
+@Composable
+fun DialogoRegistro(dao: UsuarioDAO, scope: CoroutineScope, onDismiss: () -> Unit) {
+    var nombre by remember { mutableStateOf("") }
+    var usuario by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
+    var whatsapp by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var error by remember { mutableStateOf("") }
+    var loading by remember { mutableStateOf(false) }
+    var exitoRegistro by remember { mutableStateOf(false) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(if (exitoRegistro) "¡Registro Exitoso!" else "Crear Nueva Cuenta", fontWeight = FontWeight.Bold) },
+        text = {
+            if (exitoRegistro) {
+                Text(
+                    text = "El usuario '$usuario' ha sido creado correctamente.\n\nYa puedes iniciar sesión en el sistema.",
+                    color = AppColors.Success,
+                    fontSize = 14.sp
+                )
+            } else {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    if (error.isNotEmpty()) {
+                        Text(error, color = AppColors.Danger, fontSize = 12.sp)
+                    }
+                    OutlinedTextField(value = nombre, onValueChange = { nombre = it }, label = { Text("Nombre Completo") }, singleLine = true)
+                    OutlinedTextField(value = usuario, onValueChange = { usuario = it }, label = { Text("Nombre de Usuario (Login)") }, singleLine = true)
+                    OutlinedTextField(value = email, onValueChange = { email = it }, label = { Text("Correo Electrónico") }, singleLine = true)
+                    OutlinedTextField(value = whatsapp, onValueChange = { whatsapp = it }, label = { Text("Número de WhatsApp") }, singleLine = true)
+                    OutlinedTextField(
+                        value = password,
+                        onValueChange = { password = it },
+                        label = { Text("Contraseña") },
+                        visualTransformation = PasswordVisualTransformation(),
+                        singleLine = true
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            if (exitoRegistro) {
+                Button(onClick = onDismiss, colors = ButtonDefaults.buttonColors(backgroundColor = AppColors.Success)) {
+                    Text("Aceptar", color = AppColors.White)
+                }
+            } else {
+                Button(
+                    onClick = {
+                        if (nombre.isBlank() || usuario.isBlank() || password.isBlank() || (email.isBlank() && whatsapp.isBlank())) {
+                            error = "Llene los datos obligatorios. Se requiere Email o WhatsApp."
+                            return@Button
+                        }
+                        loading = true
+                        error = ""
+                        scope.launch {
+                            val nuevoUser = Usuario(
+                                idUsuario = 0,
+                                nombre = nombre,
+                                usuario = usuario,
+                                contrasena = password,
+                                rol = "cajero", // Por defecto cajero
+                                email = email,
+                                whatsapp = whatsapp
+                            )
+                            val res = withContext(Dispatchers.IO) { dao.insertar(nuevoUser) }
+                            loading = false
+                            res.onSuccess { exito ->
+                                if (exito) {
+                                    exitoRegistro = true
+                                } else {
+                                    error = "No se pudo crear el usuario."
+                                }
+                            }.onFailure { e ->
+                                error = e.message ?: "Error al registrar"
+                            }
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(backgroundColor = AppColors.Primary)
+                ) {
+                    if (loading) CircularProgressIndicator(Modifier.size(16.dp), color = AppColors.White, strokeWidth = 2.dp)
+                    else Text("Registrarse", color = AppColors.White)
+                }
+            }
+        },
+        dismissButton = {
+            if (!exitoRegistro) {
+                TextButton(onClick = onDismiss) { Text("Cancelar", color = AppColors.TextMuted) }
+            }
+        }
+    )
+}
+
+@Composable
+fun DialogoRecuperacion(dao: UsuarioDAO, scope: CoroutineScope, onDismiss: () -> Unit) {
+    var contacto by remember { mutableStateOf("") }
+    var error by remember { mutableStateOf("") }
+    var exitoMsg by remember { mutableStateOf("") }
+    var loading by remember { mutableStateOf(false) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Recuperar Contraseña", fontWeight = FontWeight.Bold) },
+        text = {
+            Column {
+                if (exitoMsg.isNotEmpty()) {
+                    Text(exitoMsg, color = AppColors.Success, fontSize = 13.sp, fontWeight = FontWeight.Medium)
+                } else {
+                    Text("Ingresa tu Correo Electrónico o WhatsApp registrado. Se generará una clave temporal.", fontSize = 13.sp, color = AppColors.TextMuted)
+                    Spacer(Modifier.height(12.dp))
+                    if (error.isNotEmpty()) {
+                        Text(error, color = AppColors.Danger, fontSize = 12.sp)
+                        Spacer(Modifier.height(8.dp))
+                    }
+                    OutlinedTextField(
+                        value = contacto,
+                        onValueChange = { contacto = it },
+                        label = { Text("Email o WhatsApp") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            if (exitoMsg.isEmpty()) {
+                Button(
+                    onClick = {
+                        if (contacto.isBlank()) {
+                            error = "Ingresa tu método de contacto"
+                            return@Button
+                        }
+                        loading = true
+                        error = ""
+                        scope.launch {
+                            val res = withContext(Dispatchers.IO) { dao.generarClaveTemporal(contacto) }
+                            loading = false
+                            res.onSuccess { clave ->
+                                if (clave != null) {
+                                    exitoMsg = "¡Clave generada! Por seguridad y al no tener servidor de mensajería configurado, tu clave temporal es: $clave\n\nPor favor, anótala, ingresa al sistema y avisa al administrador."
+                                } else {
+                                    error = "No se encontró ningún usuario con ese Email/WhatsApp."
+                                }
+                            }.onFailure { e ->
+                                error = e.message ?: "Error al recuperar"
+                            }
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(backgroundColor = AppColors.Primary)
+                ) {
+                    if (loading) CircularProgressIndicator(Modifier.size(16.dp), color = AppColors.White, strokeWidth = 2.dp)
+                    else Text("Recuperar", color = AppColors.White)
+                }
+            } else {
+                Button(onClick = onDismiss, colors = ButtonDefaults.buttonColors(backgroundColor = AppColors.Success)) {
+                    Text("Entendido", color = AppColors.White)
+                }
+            }
+        },
+        dismissButton = {
+            if (exitoMsg.isEmpty()) {
+                TextButton(onClick = onDismiss) { Text("Cancelar", color = AppColors.TextMuted) }
+            }
+        }
+    )
 }

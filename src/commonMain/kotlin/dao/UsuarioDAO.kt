@@ -73,16 +73,20 @@ class UsuarioDAO {
 
     /**
      * Inserta un nuevo usuario con hash de contraseña y salt generado automáticamente.
-     *
-     * SEGURIDAD: Nunca se almacena la contraseña en texto plano.
+     * Incluye datos de recuperación (email, whatsapp).
      */
-    fun insertar(usuario: Usuario): Boolean {
-        val conexion = ConexionDB.getConexion() ?: return false
+    fun insertar(usuario: Usuario): Result<Boolean> {
+        val conexion = try {
+            ConexionDB.getConexion()
+        } catch (e: Throwable) {
+            return Result.failure(Exception("Error Fatal: ${e.message}"))
+        }
+        if (conexion == null) return Result.failure(Exception("Sin conexión"))
 
         val salt = HashUtils.generarSalt()
         val hashContrasena = HashUtils.hashPassword(usuario.contrasena, salt)
 
-        val sql = "INSERT INTO usuarios (nombre, usuario, contrasena, salt, rol) VALUES (?, ?, ?, ?, ?)"
+        val sql = "INSERT INTO usuarios (nombre, usuario, contrasena, salt, rol, email, whatsapp) VALUES (?, ?, ?, ?, ?, ?, ?)"
         return try {
             conexion.use { conn ->
                 conn.prepareStatement(sql).use { stmt ->
@@ -91,12 +95,69 @@ class UsuarioDAO {
                     stmt.setString(3, hashContrasena)
                     stmt.setString(4, salt)
                     stmt.setString(5, usuario.rol)
-                    stmt.executeUpdate() > 0
+                    stmt.setString(6, usuario.email.ifBlank { null })
+                    stmt.setString(7, usuario.whatsapp.ifBlank { null })
+                    val filas = stmt.executeUpdate()
+                    Result.success(filas > 0)
                 }
             }
         } catch (e: SQLException) {
             AppLogger.error("UsuarioDAO", "Error al insertar usuario: ${e.message}")
-            false
+            if (e.message?.contains("Duplicate entry") == true) {
+                Result.failure(Exception("El usuario, email o WhatsApp ya están registrados."))
+            } else {
+                Result.failure(Exception("Error de base de datos."))
+            }
+        }
+    }
+
+    /**
+     * Verifica si existe un usuario por su email o whatsapp y le genera una clave temporal.
+     * Retorna la nueva clave temporal si existe, o null si no se encontró el usuario.
+     */
+    fun generarClaveTemporal(contacto: String): Result<String?> {
+        val conexion = try { ConexionDB.getConexion() } catch (e: Throwable) { return Result.failure(e) }
+        if (conexion == null) return Result.failure(Exception("Sin conexión"))
+
+        val sqlBusqueda = "SELECT id_usuario, usuario FROM usuarios WHERE email = ? OR whatsapp = ?"
+        
+        return try {
+            conexion.use { conn ->
+                // 1. Buscar usuario
+                var idUsuarioEncontrado = -1
+                conn.prepareStatement(sqlBusqueda).use { stmt ->
+                    stmt.setString(1, contacto)
+                    stmt.setString(2, contacto)
+                    val rs = stmt.executeQuery()
+                    if (rs.next()) {
+                        idUsuarioEncontrado = rs.getInt("id_usuario")
+                    }
+                }
+
+                // 2. Si existe, generar nueva clave, hashearla y guardarla
+                if (idUsuarioEncontrado != -1) {
+                    // Generar clave temporal de 6 caracteres aleatorios alfanuméricos
+                    val chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+                    val claveTemp = (1..6).map { chars.random() }.joinToString("")
+                    
+                    val nuevoSalt = HashUtils.generarSalt()
+                    val nuevoHash = HashUtils.hashPassword(claveTemp, nuevoSalt)
+                    
+                    val sqlUpdate = "UPDATE usuarios SET contrasena = ?, salt = ? WHERE id_usuario = ?"
+                    conn.prepareStatement(sqlUpdate).use { stmt ->
+                        stmt.setString(1, nuevoHash)
+                        stmt.setString(2, nuevoSalt)
+                        stmt.setInt(3, idUsuarioEncontrado)
+                        stmt.executeUpdate()
+                    }
+                    Result.success(claveTemp)
+                } else {
+                    Result.success(null) // Usuario no encontrado
+                }
+            }
+        } catch (e: SQLException) {
+            AppLogger.error("UsuarioDAO", "Error en recuperación: ${e.message}")
+            Result.failure(e)
         }
     }
 }
