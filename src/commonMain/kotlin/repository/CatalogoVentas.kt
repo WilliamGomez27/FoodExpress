@@ -1,6 +1,6 @@
-package FastFoodApp.repository
+﻿package FoodExpress.repository
 
-import FastFoodApp.model.ProductoVenta
+import FoodExpress.model.ProductoVenta
 
 object CatalogoVentas {
 

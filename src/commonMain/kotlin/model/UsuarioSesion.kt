@@ -1,4 +1,4 @@
-package FastFoodApp.model
+﻿package FoodExpress.model
 
 /**
  * Modelo de sesión activa del usuario.

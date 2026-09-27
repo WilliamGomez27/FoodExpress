@@ -1,4 +1,4 @@
-package FastFoodApp.utils
+﻿package FoodExpress.utils
 
 /**
  * Logger centralizado con niveles de severidad.

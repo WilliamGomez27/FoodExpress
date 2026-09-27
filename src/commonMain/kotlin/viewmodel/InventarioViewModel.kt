@@ -1,7 +1,7 @@
-package FastFoodApp.viewmodel
+﻿package FoodExpress.viewmodel
 
-import FastFoodApp.repository.InventarioRepository
-import FastFoodApp.model.Producto
+import FoodExpress.repository.InventarioRepository
+import FoodExpress.model.Producto
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue

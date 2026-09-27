@@ -1,6 +1,6 @@
-package FastFoodApp.database
+﻿package FoodExpress.database
 
-import FastFoodApp.utils.AppLogger
+import FoodExpress.utils.AppLogger
 import java.sql.Connection
 import java.sql.DriverManager
 import java.sql.SQLException

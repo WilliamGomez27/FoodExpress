@@ -1,4 +1,4 @@
-package FastFoodApp.model
+﻿package FoodExpress.model
 
 /**
  * Representa una línea dentro de una venta (un producto y su cantidad).

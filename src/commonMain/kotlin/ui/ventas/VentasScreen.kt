@@ -1,9 +1,9 @@
-package FastFoodApp.ui.ventas
+﻿package FoodExpress.ui.ventas
 
-import FastFoodApp.model.ItemVenta
-import FastFoodApp.model.ProductoVenta
-import FastFoodApp.theme.AppColors
-import FastFoodApp.viewmodel.VentasViewModel
+import FoodExpress.model.ItemVenta
+import FoodExpress.model.ProductoVenta
+import FoodExpress.theme.AppColors
+import FoodExpress.viewmodel.VentasViewModel
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*

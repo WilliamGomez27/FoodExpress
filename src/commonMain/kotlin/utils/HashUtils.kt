@@ -1,4 +1,4 @@
-package FastFoodApp.utils
+﻿package FoodExpress.utils
 
 import java.security.MessageDigest
 import java.security.SecureRandom

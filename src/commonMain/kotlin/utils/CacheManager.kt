@@ -1,4 +1,4 @@
-package FastFoodApp.utils
+﻿package FoodExpress.utils
 
 import java.io.File
 import java.util.Properties
@@ -27,7 +27,7 @@ object CacheManager {
 
     private val cacheFile: File by lazy {
         val dir = if (isAndroid) {
-            File(System.getProperty("java.io.tmpdir") ?: "/data/data/com.fastfood.app/cache")
+            File(System.getProperty("java.io.tmpdir") ?: "/data/data/com.foodexpress.app/cache")
         } else {
             File(System.getProperty("user.home"), ".rappyfood")
         }
@@ -45,7 +45,7 @@ object CacheManager {
             props.setProperty("usuario", nombreUsuario)
             // 'contrasena' fue removida intencionalmente — FIX SEC-003
             FileOutputStream(cacheFile).use { out ->
-                props.store(out, "Sesion cacheada — FastFoodApp (solo usuario, sin password)")
+                props.store(out, "Sesion cacheada — FoodExpress (solo usuario, sin password)")
             }
         } catch (e: Exception) {
             AppLogger.error("CacheManager", "Error al guardar usuario: ${e.message}")

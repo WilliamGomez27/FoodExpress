@@ -1,4 +1,4 @@
-package FastFoodApp.theme
+﻿package FoodExpress.theme
 
 import androidx.compose.material.Typography
 import androidx.compose.ui.text.TextStyle

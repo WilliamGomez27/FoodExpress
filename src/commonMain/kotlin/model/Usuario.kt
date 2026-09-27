@@ -1,4 +1,4 @@
-package FastFoodApp.model
+﻿package FoodExpress.model
 
 data class Usuario(
     val idUsuario: Int,

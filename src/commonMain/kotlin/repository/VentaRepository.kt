@@ -1,8 +1,8 @@
-package FastFoodApp.repository
+﻿package FoodExpress.repository
 
-import FastFoodApp.dao.VentaDAO
-import FastFoodApp.model.ItemVenta
-import FastFoodApp.model.Venta
+import FoodExpress.dao.VentaDAO
+import FoodExpress.model.ItemVenta
+import FoodExpress.model.Venta
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 

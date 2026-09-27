@@ -1,10 +1,10 @@
-package FastFoodApp.dao
+﻿package FoodExpress.dao
 
-import FastFoodApp.database.ConexionDB
-import FastFoodApp.model.Usuario
-import FastFoodApp.model.UsuarioSesion
-import FastFoodApp.utils.AppLogger
-import FastFoodApp.utils.HashUtils
+import FoodExpress.database.ConexionDB
+import FoodExpress.model.Usuario
+import FoodExpress.model.UsuarioSesion
+import FoodExpress.utils.AppLogger
+import FoodExpress.utils.HashUtils
 import java.sql.SQLException
 
 class UsuarioDAO {

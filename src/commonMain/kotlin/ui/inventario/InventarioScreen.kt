@@ -1,7 +1,7 @@
-package FastFoodApp.ui.inventario
+﻿package FoodExpress.ui.inventario
 
-import FastFoodApp.theme.AppColors
-import FastFoodApp.viewmodel.InventarioViewModel
+import FoodExpress.theme.AppColors
+import FoodExpress.viewmodel.InventarioViewModel
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -257,7 +257,7 @@ fun PantallaInventario() {
             confirmButton = {
                 Button(
                     onClick = {
-                        val nuevoProducto = FastFoodApp.model.Producto(
+                        val nuevoProducto = FoodExpress.model.Producto(
                             idProducto = 0,
                             nombre = nombre,
                             unidadesPaq = unidadesPaq.toIntOrNull() ?: 0,

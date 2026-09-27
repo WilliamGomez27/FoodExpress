@@ -1,10 +1,10 @@
-package FastFoodApp.ui.recetas
+﻿package FoodExpress.ui.recetas
 
-import FastFoodApp.model.Producto
-import FastFoodApp.model.ProductoVenta
-import FastFoodApp.model.RecetaIngrediente
-import FastFoodApp.theme.AppColors
-import FastFoodApp.viewmodel.RecetaViewModel
+import FoodExpress.model.Producto
+import FoodExpress.model.ProductoVenta
+import FoodExpress.model.RecetaIngrediente
+import FoodExpress.theme.AppColors
+import FoodExpress.viewmodel.RecetaViewModel
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable

@@ -1,8 +1,8 @@
-package FastFoodApp.ui.login
+﻿package FoodExpress.ui.login
 
-import FastFoodApp.dao.UsuarioDAO
-import FastFoodApp.theme.AppColors
-import FastFoodApp.utils.SessionInfo
+import FoodExpress.dao.UsuarioDAO
+import FoodExpress.theme.AppColors
+import FoodExpress.utils.SessionInfo
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -21,12 +21,12 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import FastFoodApp.utils.CacheManager
+import FoodExpress.utils.CacheManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-import FastFoodApp.model.Usuario
+import FoodExpress.model.Usuario
 import kotlinx.coroutines.CoroutineScope
 
 @Composable
@@ -76,7 +76,7 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "🍔 RAPPYFOOD",
+                    text = "🍔 FOODEXPRESS",
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
                     color = AppColors.Primary

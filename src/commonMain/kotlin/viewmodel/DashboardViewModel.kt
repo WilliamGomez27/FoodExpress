@@ -1,9 +1,9 @@
-package FastFoodApp.viewmodel
+﻿package FoodExpress.viewmodel
 
-import FastFoodApp.dao.ReporteDAO
-import FastFoodApp.dao.VentaDAO
-import FastFoodApp.model.ArqueoDiario
-import FastFoodApp.model.Venta
+import FoodExpress.dao.ReporteDAO
+import FoodExpress.dao.VentaDAO
+import FoodExpress.model.ArqueoDiario
+import FoodExpress.model.Venta
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow

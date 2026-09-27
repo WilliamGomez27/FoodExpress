@@ -1,7 +1,7 @@
-package FastFoodApp.repository
+﻿package FoodExpress.repository
 
-import FastFoodApp.dao.InventarioDAO
-import FastFoodApp.model.Producto
+import FoodExpress.dao.InventarioDAO
+import FoodExpress.model.Producto
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -23,7 +23,7 @@ class InventarioRepository {
     }
 
     suspend fun insertarProducto(producto: Producto): Boolean = withContext(Dispatchers.IO) {
-        val productoDao = FastFoodApp.dao.ProductoDAO()
+        val productoDao = FoodExpress.dao.ProductoDAO()
         productoDao.insertar(producto)
     }
 }

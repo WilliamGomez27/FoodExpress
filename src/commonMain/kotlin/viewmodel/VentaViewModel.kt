@@ -1,10 +1,10 @@
-package FastFoodApp.viewmodel
+﻿package FoodExpress.viewmodel
 
-import FastFoodApp.dao.ProductoVentaDAO
-import FastFoodApp.dao.VentaDAO
-import FastFoodApp.model.ItemVenta
-import FastFoodApp.model.ProductoVenta
-import FastFoodApp.model.Venta
+import FoodExpress.dao.ProductoVentaDAO
+import FoodExpress.dao.VentaDAO
+import FoodExpress.model.ItemVenta
+import FoodExpress.model.ProductoVenta
+import FoodExpress.model.Venta
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue

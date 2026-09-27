@@ -1,8 +1,8 @@
-package FastFoodApp.utils
+﻿package FoodExpress.utils
 
 // Constantes globales de la aplicación
 object Constantes {
-    const val APP_NAME    = "FastFoodApp"
+    const val APP_NAME    = "FoodExpress"
     const val APP_VERSION = "1.0"
     const val MONEDA      = "Q"
 

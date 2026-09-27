@@ -1,15 +1,15 @@
-package FastFoodApp.dao
+﻿package FoodExpress.dao
 
-import FastFoodApp.infrastructure.DatabaseTestSetup
-import FastFoodApp.model.Usuario
-import FastFoodApp.utils.HashUtils
+import FoodExpress.infrastructure.DatabaseTestSetup
+import FoodExpress.model.Usuario
+import FoodExpress.utils.HashUtils
 import kotlin.test.*
 
 /**
  * Tests de integración para [UsuarioDAO] usando MySQL real en Docker (Testcontainers).
  *
  * Pre-requisito: Docker Desktop debe estar corriendo.
- * Ejecutar con: .\gradlew desktopTest --tests "FastFoodApp.dao.UsuarioDAOIntegrationTest"
+ * Ejecutar con: .\gradlew desktopTest --tests "FoodExpress.dao.UsuarioDAOIntegrationTest"
  */
 class UsuarioDAOIntegrationTest {
 

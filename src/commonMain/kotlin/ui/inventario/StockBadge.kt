@@ -1,6 +1,6 @@
-package FastFoodApp.ui.inventario
+﻿package FoodExpress.ui.inventario
 
-import FastFoodApp.theme.AppColors
+import FoodExpress.theme.AppColors
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*

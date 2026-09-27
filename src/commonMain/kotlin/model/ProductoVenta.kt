@@ -1,4 +1,4 @@
-package FastFoodApp.model
+﻿package FoodExpress.model
 
 /**
  * Representa un producto terminado disponible para la venta (ej. Hamburguesa, Gaseosa).

@@ -1,7 +1,7 @@
-package FastFoodApp.viewmodel
+﻿package FoodExpress.viewmodel
 
-import FastFoodApp.dao.GastoDAO
-import FastFoodApp.model.Gasto
+import FoodExpress.dao.GastoDAO
+import FoodExpress.model.Gasto
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue

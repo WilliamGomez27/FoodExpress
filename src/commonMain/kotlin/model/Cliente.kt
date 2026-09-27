@@ -1,4 +1,4 @@
-package FastFoodApp.model
+﻿package FoodExpress.model
 
 // TODO: Implementar modelo de Cliente
 data class Cliente(

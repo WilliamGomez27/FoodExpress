@@ -1,6 +1,6 @@
-package FastFoodApp.ui.info
+﻿package FoodExpress.ui.info
 
-import FastFoodApp.theme.AppColors
+import FoodExpress.theme.AppColors
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
@@ -38,7 +38,7 @@ fun PantallaInfo() {
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
-                    text = "RAPPYFOOD - FastFoodApp",
+                    text = "FOODEXPRESS - FoodExpress",
                     fontSize = 22.sp,
                     fontWeight = FontWeight.Bold,
                     color = AppColors.TextPrimary

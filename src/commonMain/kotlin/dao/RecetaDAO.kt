@@ -1,8 +1,8 @@
-package FastFoodApp.dao
+﻿package FoodExpress.dao
 
-import FastFoodApp.database.ConexionDB
-import FastFoodApp.model.RecetaIngrediente
-import FastFoodApp.utils.AppLogger
+import FoodExpress.database.ConexionDB
+import FoodExpress.model.RecetaIngrediente
+import FoodExpress.utils.AppLogger
 import java.sql.Connection
 import java.sql.SQLException
 

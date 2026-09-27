@@ -1,4 +1,4 @@
-package FastFoodApp.model
+﻿package FoodExpress.model
 
 /**
  * Representa un ingrediente de materia prima dentro de la receta

@@ -1,4 +1,4 @@
-package FastFoodApp.ui.inventario
+﻿package FoodExpress.ui.inventario
 
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable

@@ -1,6 +1,6 @@
-package FastFoodApp
+﻿package FoodExpress
 
-import FastFoodApp.utils.HashUtils
+import FoodExpress.utils.HashUtils
 import kotlin.test.*
 
 /**

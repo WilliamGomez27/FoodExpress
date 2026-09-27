@@ -1,7 +1,7 @@
-package FastFoodApp.ui.reportes
+﻿package FoodExpress.ui.reportes
 
-import FastFoodApp.theme.AppColors
-import FastFoodApp.viewmodel.ReporteViewModel
+import FoodExpress.theme.AppColors
+import FoodExpress.viewmodel.ReporteViewModel
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn

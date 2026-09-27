@@ -1,7 +1,7 @@
-package FastFoodApp
+﻿package FoodExpress
 
-import FastFoodApp.model.UsuarioSesion
-import FastFoodApp.utils.SessionInfo
+import FoodExpress.model.UsuarioSesion
+import FoodExpress.utils.SessionInfo
 import kotlin.test.*
 
 /**

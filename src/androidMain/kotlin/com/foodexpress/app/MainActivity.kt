@@ -1,7 +1,7 @@
-package com.fastfood.app
+﻿package com.foodexpress.app
 
-import FastFoodApp.database.DbConfig
-import FastFoodApp.navigation.AppFastFood
+import FoodExpress.database.DbConfig
+import FoodExpress.navigation.AppFoodExpress
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -17,7 +17,7 @@ class MainActivity : ComponentActivity() {
         cargarConfiguracionDB()
 
         setContent {
-            AppFastFood()
+            AppFoodExpress()
         }
     }
 

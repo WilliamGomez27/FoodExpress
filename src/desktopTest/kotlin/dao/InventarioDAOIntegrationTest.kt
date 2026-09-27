@@ -1,6 +1,6 @@
-package FastFoodApp.dao
+﻿package FoodExpress.dao
 
-import FastFoodApp.infrastructure.DatabaseTestSetup
+import FoodExpress.infrastructure.DatabaseTestSetup
 import kotlin.test.*
 
 /**

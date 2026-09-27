@@ -1,8 +1,8 @@
-package FastFoodApp.viewmodel
+﻿package FoodExpress.viewmodel
 
-import FastFoodApp.dao.ReporteDAO
-import FastFoodApp.model.ArqueoDiario
-import FastFoodApp.model.CierreMensual
+import FoodExpress.dao.ReporteDAO
+import FoodExpress.model.ArqueoDiario
+import FoodExpress.model.CierreMensual
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue

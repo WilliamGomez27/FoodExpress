@@ -1,16 +1,16 @@
-package FastFoodApp.navigation
+﻿package FoodExpress.navigation
 
-import FastFoodApp.theme.AppColors
-import FastFoodApp.theme.AppTheme
-import FastFoodApp.ui.dashboard.PantallaInicio
-import FastFoodApp.ui.gastos.PantallaGastos
-import FastFoodApp.ui.info.PantallaInfo
-import FastFoodApp.ui.inventario.PantallaInventario
-import FastFoodApp.ui.login.LoginScreen
-import FastFoodApp.ui.recetas.PantallaRecetas
-import FastFoodApp.ui.reportes.PantallaReportes
-import FastFoodApp.ui.ventas.PantallaVentas
-import FastFoodApp.utils.SessionInfo
+import FoodExpress.theme.AppColors
+import FoodExpress.theme.AppTheme
+import FoodExpress.ui.dashboard.PantallaInicio
+import FoodExpress.ui.gastos.PantallaGastos
+import FoodExpress.ui.info.PantallaInfo
+import FoodExpress.ui.inventario.PantallaInventario
+import FoodExpress.ui.login.LoginScreen
+import FoodExpress.ui.recetas.PantallaRecetas
+import FoodExpress.ui.reportes.PantallaReportes
+import FoodExpress.ui.ventas.PantallaVentas
+import FoodExpress.utils.SessionInfo
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -82,7 +82,7 @@ fun SidebarItem(item: MenuItem, isSelected: Boolean, onClick: () -> Unit) {
 
 // ── Shell principal responsivo de la app ──────────────────────────────────────
 @Composable
-fun AppFastFood() {
+fun AppFoodExpress() {
     var pantallaActual by remember { mutableStateOf("Login") }
     val scope = rememberCoroutineScope()
 
@@ -127,7 +127,7 @@ fun AppFastFood() {
                     ) {
                         Column(modifier = Modifier.padding(bottom = 28.dp, top = 8.dp)) {
                             Text(
-                                text = "🍔 RAPPYFOOD",
+                                text = "🍔 FOODEXPRESS",
                                 color = AppColors.White,
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Bold
@@ -175,7 +175,7 @@ fun AppFastFood() {
                         Divider(color = AppColors.White.copy(alpha = 0.08f), thickness = 1.dp)
                         Spacer(modifier = Modifier.height(12.dp))
                         Text(
-                            text = "v1.0  •  FastFoodApp",
+                            text = "v1.0  •  FoodExpress",
                             color = AppColors.White.copy(alpha = 0.25f),
                             fontSize = 10.sp,
                             modifier = Modifier.padding(horizontal = 12.dp)

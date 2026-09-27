@@ -1,4 +1,4 @@
-package FastFoodApp.model
+﻿package FoodExpress.model
 
 data class ArqueoDiario(
     val fecha: String,

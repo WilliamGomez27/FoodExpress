@@ -1,6 +1,6 @@
-package FastFoodApp.infrastructure
+﻿package FoodExpress.infrastructure
 
-import FastFoodApp.database.DbConfig
+import FoodExpress.database.DbConfig
 import org.testcontainers.containers.MySQLContainer
 import org.testcontainers.utility.DockerImageName
 import java.sql.DriverManager

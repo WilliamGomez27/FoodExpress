@@ -1,6 +1,6 @@
-package FastFoodApp.utils
+﻿package FoodExpress.utils
 
-import FastFoodApp.model.UsuarioSesion
+import FoodExpress.model.UsuarioSesion
 
 /**
  * Información de la sesión activa del usuario.

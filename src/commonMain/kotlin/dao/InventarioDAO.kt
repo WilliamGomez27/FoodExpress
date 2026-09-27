@@ -1,8 +1,8 @@
-package FastFoodApp.dao
+﻿package FoodExpress.dao
 
-import FastFoodApp.database.ConexionDB
-import FastFoodApp.model.Producto
-import FastFoodApp.utils.AppLogger
+import FoodExpress.database.ConexionDB
+import FoodExpress.model.Producto
+import FoodExpress.utils.AppLogger
 import java.sql.SQLException
 
 class InventarioDAO {

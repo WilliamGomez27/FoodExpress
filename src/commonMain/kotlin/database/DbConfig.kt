@@ -1,4 +1,4 @@
-package FastFoodApp.database
+﻿package FoodExpress.database
 
 /**
  * Configuración de conexión a la base de datos.

@@ -1,6 +1,6 @@
-package FastFoodApp
+﻿package FoodExpress
 
-import FastFoodApp.utils.Validaciones
+import FoodExpress.utils.Validaciones
 import kotlin.test.*
 
 /**

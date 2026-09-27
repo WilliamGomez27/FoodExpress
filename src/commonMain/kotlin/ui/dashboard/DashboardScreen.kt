@@ -1,8 +1,8 @@
-package FastFoodApp.ui.dashboard
+﻿package FoodExpress.ui.dashboard
 
-import FastFoodApp.theme.AppColors
-import FastFoodApp.utils.SessionInfo
-import FastFoodApp.viewmodel.DashboardViewModel
+import FoodExpress.theme.AppColors
+import FoodExpress.utils.SessionInfo
+import FoodExpress.viewmodel.DashboardViewModel
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
@@ -51,7 +51,7 @@ fun PantallaInicio(onNavegar: (String) -> Unit, scope: CoroutineScope) {
         ) {
             Column {
                 Text(
-                    text = "RAPPYFOOD  🍔 ",
+                    text = "FOODEXPRESS  🍔 ",
                     fontSize = 30.sp,
                     fontWeight = FontWeight.Bold,
                     color = AppColors.TextPrimary

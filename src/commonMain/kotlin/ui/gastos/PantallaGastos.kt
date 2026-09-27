@@ -1,7 +1,7 @@
-package FastFoodApp.ui.gastos
+﻿package FoodExpress.ui.gastos
 
-import FastFoodApp.theme.AppColors
-import FastFoodApp.viewmodel.GastoViewModel
+import FoodExpress.theme.AppColors
+import FoodExpress.viewmodel.GastoViewModel
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn

@@ -1,6 +1,6 @@
-package com.fastfood.app
+﻿package com.foodexpress.app
 
-import FastFoodApp.ui.login.LoginScreen
+import FoodExpress.ui.login.LoginScreen
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick

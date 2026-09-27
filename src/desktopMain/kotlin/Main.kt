@@ -1,9 +1,9 @@
-package FastFoodApp
+﻿package FoodExpress
 
-import FastFoodApp.database.ConexionDB
-import FastFoodApp.database.DbConfig
-import FastFoodApp.navigation.AppFastFood
-import FastFoodApp.utils.AppLogger
+import FoodExpress.database.ConexionDB
+import FoodExpress.database.DbConfig
+import FoodExpress.navigation.AppFoodExpress
+import FoodExpress.utils.AppLogger
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
@@ -22,11 +22,11 @@ fun main() = application {
             ConexionDB.cerrarConexion()
             exitApplication()
         },
-        title = "Creado Por WILLIAM.GOMEZ - FastFoodApp",
+        title = "Creado Por WILLIAM.GOMEZ - FoodExpress",
         state = windowState,
         icon = painterResource("ic_launcher_fastfood.xml")
     ) {
-        AppFastFood()
+        AppFoodExpress()
     }
 }
 

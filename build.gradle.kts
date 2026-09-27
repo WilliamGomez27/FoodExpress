@@ -1,4 +1,4 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+﻿import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     kotlin("multiplatform") version "2.1.10"
@@ -88,11 +88,11 @@ kotlin {
 }
 
 android {
-    namespace = "com.fastfood.app"
+    namespace = "com.foodexpress.app"
     compileSdk = 37
 
     defaultConfig {
-        applicationId = "com.fastfood.app"
+        applicationId = "com.foodexpress.app"
         minSdk = 24
         targetSdk = 37
         versionCode = 1
@@ -114,7 +114,7 @@ android {
 
 compose.desktop {
     application {
-        mainClass = "FastFoodApp.MainKt"
+        mainClass = "FoodExpress.MainKt"
         jvmArgs += listOf("--enable-native-access=ALL-UNNAMED")
     }
 }

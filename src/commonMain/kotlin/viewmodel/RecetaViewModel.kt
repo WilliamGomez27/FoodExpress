@@ -1,12 +1,12 @@
-package FastFoodApp.viewmodel
+﻿package FoodExpress.viewmodel
 
-import FastFoodApp.dao.ProductoVentaDAO
-import FastFoodApp.model.Producto
-import FastFoodApp.model.ProductoVenta
-import FastFoodApp.model.RecetaIngrediente
-import FastFoodApp.repository.CatalogoVentas
-import FastFoodApp.repository.InventarioRepository
-import FastFoodApp.repository.RecetaRepository
+import FoodExpress.dao.ProductoVentaDAO
+import FoodExpress.model.Producto
+import FoodExpress.model.ProductoVenta
+import FoodExpress.model.RecetaIngrediente
+import FoodExpress.repository.CatalogoVentas
+import FoodExpress.repository.InventarioRepository
+import FoodExpress.repository.RecetaRepository
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
