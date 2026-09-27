@@ -1,4 +1,4 @@
-﻿pluginManagement {
+pluginManagement {
     repositories {
         google()
         mavenCentral()
@@ -7,7 +7,7 @@
     resolutionStrategy {
         eachPlugin {
             if (requested.id.id == "org.jetbrains.kotlin.multiplatform") {
-                useModule("org.jetbrains.kotlin:kotlin-gradle-plugin:2.1.10")
+                useModule("org.jetbrains.kotlin:kotlin-gradle-plugin:2.4.20")
             }
             if (requested.id.id == "com.android.application") {
                 useModule("com.android.tools.build:gradle:9.3.2")
