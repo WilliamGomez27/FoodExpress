@@ -91,7 +91,7 @@ class UsuarioDAOIntegrationTest {
             rol = "cajero"
         )
         val resultado = dao.insertar(usuario)
-        assertTrue(resultado)
+        assertTrue(resultado.getOrDefault(false))
 
         // Verificar que en BD NO está el texto claro
         DatabaseTestSetup.getTestConnection().use { conn ->
