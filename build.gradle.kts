@@ -1,4 +1,4 @@
-﻿import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     kotlin("multiplatform") version "2.1.10"
@@ -36,7 +36,7 @@ kotlin {
 
                 // Volvemos a la versión 5.1.49 de MySQL Connector para Android
                 // porque las versiones 8.0+ y 9.0+ usan java.sql.SQLType que NO existe en Android.
-                implementation("mysql:mysql-connector-java:5.1.49")
+                implementation("mysql:mysql-connector-java:8.0.28")
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
             }
         }
