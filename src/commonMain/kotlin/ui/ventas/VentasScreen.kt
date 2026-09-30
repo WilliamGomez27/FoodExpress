@@ -3,7 +3,9 @@
 import FoodExpress.model.ItemVenta
 import FoodExpress.model.ProductoVenta
 import FoodExpress.theme.AppColors
+import FoodExpress.utils.ImageHelper
 import FoodExpress.viewmodel.VentasViewModel
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -23,6 +25,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.items
+import coil3.compose.AsyncImage
+import androidx.compose.ui.layout.ContentScale
 
 @Composable
 fun PantallaVentas() {
@@ -86,14 +94,19 @@ fun PantallaVentas() {
                                 CircularProgressIndicator(color = AppColors.Primary)
                             }
                         } else {
-                            LazyColumn {
+                            LazyVerticalGrid(
+                                columns = GridCells.Adaptive(minSize = 180.dp),
+                                contentPadding = PaddingValues(16.dp),
+                                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                verticalArrangement = Arrangement.spacedBy(12.dp),
+                                modifier = Modifier.fillMaxSize()
+                            ) {
                                 items(filtrados) { producto ->
-                                    CatalogoFila(
+                                    CatalogoCard(
                                         producto = producto,
                                         enCarrito = vm.carrito.find { it.productoVenta.idProductoVenta == producto.idProductoVenta }?.cantidad ?: 0,
                                         onAgregar = { vm.agregarAlCarrito(producto) }
                                     )
-                                    Divider(color = AppColors.Divider, thickness = 0.5.dp)
                                 }
                             }
                         }
@@ -171,35 +184,78 @@ fun PantallaVentas() {
 }
 
 @Composable
-fun CatalogoFila(producto: ProductoVenta, enCarrito: Int, onAgregar: () -> Unit) {
-    Row(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp),
-        verticalAlignment = Alignment.CenterVertically
+fun CatalogoCard(producto: ProductoVenta, enCarrito: Int, onAgregar: () -> Unit) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onAgregar() },
+        elevation = 2.dp,
+        shape = RoundedCornerShape(12.dp),
+        backgroundColor = if (enCarrito > 0) AppColors.Primary.copy(alpha = 0.05f) else AppColors.CardBg,
+        border = BorderStroke(
+            1.dp, 
+            if (enCarrito > 0) AppColors.Primary else AppColors.Divider
+        )
     ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(producto.nombre, fontSize = 13.sp, fontWeight = FontWeight.Medium, color = AppColors.TextPrimary)
-            Text("${producto.categoria}  •  COP %.2f".format(producto.precioVenta), fontSize = 11.sp, color = AppColors.TextMuted)
-        }
-        if (enCarrito > 0) {
-            Box(
-                modifier = Modifier
-                    .size(22.dp)
-                    .clip(RoundedCornerShape(50))
-                    .background(AppColors.Primary),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("$enCarrito", color = AppColors.White, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-            }
-            Spacer(Modifier.width(8.dp))
-        }
-        IconButton(
-            onClick = onAgregar,
-            modifier = Modifier
-                .size(34.dp)
-                .clip(RoundedCornerShape(8.dp))
-                .background(AppColors.Primary.copy(0.1f))
+        Column(
+            modifier = Modifier.padding(12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Icon(Icons.Default.Add, contentDescription = "Agregar", tint = AppColors.Primary, modifier = Modifier.size(18.dp))
+            val urlImagen = ImageHelper.obtenerImagenParaProducto(producto.idProductoVenta, producto.imagenUrl)
+            AsyncImage(
+                model = urlImagen,
+                contentDescription = producto.nombre,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .size(60.dp)
+                    .clip(RoundedCornerShape(10.dp))
+            )
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            Text(
+                text = producto.nombre,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold,
+                color = AppColors.TextPrimary,
+                textAlign = TextAlign.Center,
+                maxLines = 2
+            )
+            
+            Spacer(modifier = Modifier.height(2.dp))
+            
+            Text(
+                text = producto.categoria,
+                fontSize = 11.sp,
+                color = AppColors.TextMuted
+            )
+            
+            Spacer(modifier = Modifier.height(6.dp))
+            
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "COP %.2f".format(producto.precioVenta),
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Black,
+                    color = AppColors.Success
+                )
+                
+                if (enCarrito > 0) {
+                    Box(
+                        modifier = Modifier
+                            .size(24.dp)
+                            .clip(RoundedCornerShape(50))
+                            .background(AppColors.Primary),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("$enCarrito", color = AppColors.White, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
         }
     }
 }

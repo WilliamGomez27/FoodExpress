@@ -11,7 +11,7 @@ class ProductoVentaDAO {
     fun obtenerTodos(): List<ProductoVenta> {
         val conexion = ConexionDB.getConexion() ?: return emptyList()
         val lista = mutableListOf<ProductoVenta>()
-        val sql = "SELECT id_producto_venta, nombre, precio_venta, categoria FROM productos_venta ORDER BY nombre ASC"
+        val sql = "SELECT id_producto_venta, nombre, precio_venta, categoria, imagen_url FROM productos_venta ORDER BY nombre ASC"
         
         return try {
             conexion.use { conn ->
@@ -23,7 +23,8 @@ class ProductoVentaDAO {
                                 idProductoVenta = rs.getInt("id_producto_venta"),
                                 nombre = rs.getString("nombre"),
                                 precioVenta = rs.getDouble("precio_venta"),
-                                categoria = rs.getString("categoria") ?: "General"
+                                categoria = rs.getString("categoria") ?: "General",
+                                imagenUrl = rs.getString("imagen_url")
                             )
                         )
                     }
@@ -38,13 +39,14 @@ class ProductoVentaDAO {
 
     fun insertar(producto: ProductoVenta): Int {
         val conexion = ConexionDB.getConexion() ?: return -1
-        val sql = "INSERT INTO productos_venta (nombre, precio_venta, categoria) VALUES (?, ?, ?)"
+        val sql = "INSERT INTO productos_venta (nombre, precio_venta, categoria, imagen_url) VALUES (?, ?, ?, ?)"
         return try {
             conexion.use { conn ->
                 conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS).use { stmt ->
                     stmt.setString(1, producto.nombre)
                     stmt.setDouble(2, producto.precioVenta)
                     stmt.setString(3, producto.categoria)
+                    stmt.setString(4, producto.imagenUrl)
                     stmt.executeUpdate()
                     val rs = stmt.generatedKeys
                     if (rs.next()) rs.getInt(1) else -1

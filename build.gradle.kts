@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "org.example"
-version = "1.0-SNAPSHOT"
+version = "1.1.1"
 
 kotlin {
     androidTarget {
@@ -24,63 +24,55 @@ kotlin {
     }
 
     sourceSets {
-        val commonMain by getting {
-            dependencies {
-                implementation(compose.runtime)
-                implementation(compose.foundation)
-                implementation(compose.material)
-                implementation(compose.materialIconsExtended)
-                implementation(compose.ui)
-                implementation(compose.components.resources)
-                implementation(compose.components.uiToolingPreview)
+        commonMain.dependencies {
+            implementation(compose.runtime)
+            implementation(compose.foundation)
+            implementation(compose.material)
+            implementation(compose.materialIconsExtended)
+            implementation(compose.ui)
+            implementation(compose.components.resources)
+            implementation(compose.components.uiToolingPreview)
 
-                // Volvemos a la versión 5.1.49 de MySQL Connector para Android
-                // porque las versiones 8.0+ y 9.0+ usan java.sql.SQLType que NO existe en Android.
-                implementation("mysql:mysql-connector-java:8.0.28")
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
-            }
+            // Volvemos a la versión 5.1.49 de MySQL Connector para Android
+            // porque las versiones 8.0+ y 9.0+ usan java.sql.SQLType que NO existe en Android.
+            implementation("mysql:mysql-connector-java:5.1.49")
+            implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
+
+            // Coil 3 para carga de imágenes en Compose Multiplatform
+            implementation("io.coil-kt.coil3:coil-compose:3.1.0")
+            implementation("io.coil-kt.coil3:coil-network-ktor3:3.1.0")
         }
 
-        val commonTest by getting {
-            dependencies {
-                implementation(kotlin("test"))
-            }
+        commonTest.dependencies {
+            implementation(kotlin("test"))
         }
 
-        val androidMain by getting {
-            dependencies {
-                implementation("androidx.activity:activity-compose:1.13.0")
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.11.0")
-            }
+        androidMain.dependencies {
+            implementation("androidx.activity:activity-compose:1.13.0")
+            implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.11.0")
         }
 
-        val androidInstrumentedTest by getting {
-            dependencies {
-                implementation(kotlin("test-junit"))
-                implementation("androidx.test.ext:junit:1.3.0")
-                implementation("androidx.test.espresso:espresso-core:3.7.0")
-                implementation("androidx.compose.ui:ui-test-junit4:1.12.1")
-                implementation("androidx.compose.ui:ui-test-manifest:1.12.1")
-            }
+        androidInstrumentedTest.dependencies {
+            implementation(kotlin("test-junit"))
+            implementation("androidx.test.ext:junit:1.3.0")
+            implementation("androidx.test.espresso:espresso-core:3.7.0")
+            implementation("androidx.compose.ui:ui-test-junit4:1.12.1")
+            implementation("androidx.compose.ui:ui-test-manifest:1.12.1")
         }
 
-        val desktopMain by getting {
-            dependencies {
-                implementation(compose.desktop.currentOs)
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.11.0")
-            }
+        sourceSets.getByName("desktopMain").dependencies {
+            implementation(compose.desktop.currentOs)
+            implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.11.0")
         }
 
-        val desktopTest by getting {
-            dependencies {
-                // Testcontainers — MySQL real en Docker para integration tests
-                implementation("org.testcontainers:testcontainers:1.21.4")
-                implementation("org.testcontainers:mysql:1.21.4")
-                // MockK — Mocking para Kotlin
-                implementation("io.mockk:mockk:1.14.11")
-                // SLF4J para suprimir warnings de Testcontainers en tests
-                implementation("org.slf4j:slf4j-simple:2.0.20")
-            }
+        sourceSets.getByName("desktopTest").dependencies {
+            // Testcontainers — MySQL real en Docker para integration tests
+            implementation("org.testcontainers:testcontainers:1.21.4")
+            implementation("org.testcontainers:mysql:1.21.4")
+            // MockK — Mocking para Kotlin
+            implementation("io.mockk:mockk:1.14.11")
+            // SLF4J para suprimir warnings de Testcontainers en tests
+            implementation("org.slf4j:slf4j-simple:2.0.20")
         }
     }
 }
@@ -93,8 +85,8 @@ android {
         applicationId = "com.foodexpress.app"
         minSdk = 26
         targetSdk = 37
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "1.1.1"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 

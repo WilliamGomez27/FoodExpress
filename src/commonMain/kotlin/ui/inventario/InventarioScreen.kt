@@ -16,6 +16,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.items
+import FoodExpress.model.Producto
+
 @Composable
 fun PantallaInventario() {
     val scope         = rememberCoroutineScope()
@@ -23,6 +28,7 @@ fun PantallaInventario() {
     val scaffoldState = rememberScaffoldState()
     var expandido     by remember { mutableStateOf("") }
     var mostrarDialogoNuevoProducto by remember { mutableStateOf(false) }
+    var productoAEditar by remember { mutableStateOf<Producto?>(null) }
 
     LaunchedEffect(Unit) { vm.cargarProductos() }
 
@@ -111,11 +117,12 @@ fun PantallaInventario() {
                                 .clip(RoundedCornerShape(topStart = 14.dp, topEnd = 14.dp))
                                 .padding(horizontal = 16.dp, vertical = 12.dp)
                         ) {
-                            TableHeader("Producto",    Modifier.weight(2.5f))
-                            TableHeader("Stock",       Modifier.weight(1f))
-                            TableHeader("Mín.",        Modifier.weight(1f))
-                            TableHeader("Precio",      Modifier.weight(1.2f))
-                            TableHeader("Estado",      Modifier.weight(1.5f))
+                            Text(
+                                text = "Catálogo de Productos",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = AppColors.White
+                            )
                         }
 
                         if (vm.cargando && vm.productos.isEmpty()) {
@@ -124,14 +131,19 @@ fun PantallaInventario() {
                                 contentAlignment = Alignment.Center
                             ) { CircularProgressIndicator(color = AppColors.Primary) }
                         } else {
-                            LazyColumn {
+                            LazyVerticalGrid(
+                                columns = GridCells.Adaptive(minSize = 250.dp),
+                                contentPadding = PaddingValues(16.dp),
+                                modifier = Modifier.fillMaxSize()
+                            ) {
                                 items(vm.productos) { producto ->
-                                    ProductoFila(
+                                    ProductoCard(
                                         producto = producto,
                                         isSelected = vm.productoSel?.idProducto == producto.idProducto,
-                                        onClick = { vm.productoSel = producto }
+                                        onClick = { vm.productoSel = producto },
+                                        onEdit = { productoAEditar = producto },
+                                        onDelete = { vm.eliminarProducto(producto.idProducto) }
                                     )
-                                    Divider(color = AppColors.Divider, thickness = 0.5.dp)
                                 }
                             }
                         }
@@ -233,17 +245,21 @@ fun PantallaInventario() {
         }
     }
 
-    if (mostrarDialogoNuevoProducto) {
-        var nombre by remember { mutableStateOf("") }
-        var unidadesPaq by remember { mutableStateOf("") }
-        var pesoLibras by remember { mutableStateOf("") }
-        var precioVenta by remember { mutableStateOf("") }
-        var stockActual by remember { mutableStateOf("") }
-        var stockMinimo by remember { mutableStateOf("") }
+    if (mostrarDialogoNuevoProducto || productoAEditar != null) {
+        val esEdicion = productoAEditar != null
+        var nombre by remember { mutableStateOf(productoAEditar?.nombre ?: "") }
+        var unidadesPaq by remember { mutableStateOf(productoAEditar?.unidadesPaq?.toString() ?: "") }
+        var pesoLibras by remember { mutableStateOf(productoAEditar?.pesoLibras?.toString() ?: "") }
+        var precioVenta by remember { mutableStateOf(productoAEditar?.precioVenta?.toString() ?: "") }
+        var stockActual by remember { mutableStateOf(productoAEditar?.stockActual?.toString() ?: "") }
+        var stockMinimo by remember { mutableStateOf(productoAEditar?.stockMinimo?.toString() ?: "") }
 
         AlertDialog(
-            onDismissRequest = { mostrarDialogoNuevoProducto = false },
-            title = { Text("Nuevo Producto", fontWeight = FontWeight.Bold) },
+            onDismissRequest = { 
+                mostrarDialogoNuevoProducto = false 
+                productoAEditar = null
+            },
+            title = { Text(if (esEdicion) "Editar Producto" else "Nuevo Producto", fontWeight = FontWeight.Bold) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     OutlinedTextField(value = nombre, onValueChange = { nombre = it }, label = { Text("Nombre") })
@@ -257,8 +273,8 @@ fun PantallaInventario() {
             confirmButton = {
                 Button(
                     onClick = {
-                        val nuevoProducto = FoodExpress.model.Producto(
-                            idProducto = 0,
+                        val prod = Producto(
+                            idProducto = productoAEditar?.idProducto ?: 0,
                             nombre = nombre,
                             unidadesPaq = unidadesPaq.toIntOrNull() ?: 0,
                             pesoLibras = pesoLibras.toDoubleOrNull() ?: 0.0,
@@ -266,8 +282,13 @@ fun PantallaInventario() {
                             stockActual = stockActual.toIntOrNull() ?: 0,
                             stockMinimo = stockMinimo.toIntOrNull() ?: 0
                         )
-                        vm.registrarNuevoProducto(nuevoProducto)
+                        if (esEdicion) {
+                            vm.actualizarProducto(prod)
+                        } else {
+                            vm.registrarNuevoProducto(prod)
+                        }
                         mostrarDialogoNuevoProducto = false
+                        productoAEditar = null
                     },
                     colors = ButtonDefaults.buttonColors(backgroundColor = AppColors.Primary)
                 ) {
@@ -275,7 +296,10 @@ fun PantallaInventario() {
                 }
             },
             dismissButton = {
-                OutlinedButton(onClick = { mostrarDialogoNuevoProducto = false }) {
+                OutlinedButton(onClick = { 
+                    mostrarDialogoNuevoProducto = false 
+                    productoAEditar = null
+                }) {
                     Text("Cancelar")
                 }
             }

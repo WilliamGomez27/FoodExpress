@@ -5,6 +5,7 @@ import FoodExpress.model.ProductoVenta
 import FoodExpress.model.RecetaIngrediente
 import FoodExpress.theme.AppColors
 import FoodExpress.viewmodel.RecetaViewModel
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -19,6 +20,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -29,6 +31,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+
 @Composable
 fun PantallaRecetas() {
     val scope         = rememberCoroutineScope()
@@ -37,6 +43,9 @@ fun PantallaRecetas() {
     
     var productoEditandoPrecio by remember { mutableStateOf<ProductoVenta?>(null) }
     var nuevoPrecioInput by remember { mutableStateOf("") }
+
+    var ingredienteAEditar by remember { mutableStateOf<RecetaIngrediente?>(null) }
+    var nuevaCantidadIngredienteInput by remember { mutableStateOf("") }
     
     var mostrarDialogoNuevoProducto by remember { mutableStateOf(false) }
     var nuevoProductoNombre by remember { mutableStateOf("") }
@@ -125,10 +134,11 @@ fun PantallaRecetas() {
                             onMateriaPrimaChange     = { vm.materiaPrimaSeleccionada = it },
                             cantidadInput            = vm.cantidadInput,
                             onCantidadChange         = { vm.cantidadInput = it },
-                            unidadSeleccionada       = vm.unidadSeleccionada,
-                            onUnidadChange           = { vm.unidadSeleccionada = it },
-                            unidades                 = vm.unidades,
                             onAgregarIngrediente     = { vm.agregarIngrediente() },
+                            onEditarIngrediente      = { ing ->
+                                ingredienteAEditar = ing
+                                nuevaCantidadIngredienteInput = ing.cantidad.toString()
+                            },
                             onEliminarIngrediente    = { vm.eliminarIngrediente(it) },
                             onGuardarReceta          = { vm.guardarReceta() },
                             modifier                 = Modifier.weight(1f).fillMaxHeight()
@@ -159,10 +169,11 @@ fun PantallaRecetas() {
                             onMateriaPrimaChange     = { vm.materiaPrimaSeleccionada = it },
                             cantidadInput            = vm.cantidadInput,
                             onCantidadChange         = { vm.cantidadInput = it },
-                            unidadSeleccionada       = vm.unidadSeleccionada,
-                            onUnidadChange           = { vm.unidadSeleccionada = it },
-                            unidades                 = vm.unidades,
                             onAgregarIngrediente     = { vm.agregarIngrediente() },
+                            onEditarIngrediente      = { ing ->
+                                ingredienteAEditar = ing
+                                nuevaCantidadIngredienteInput = ing.cantidad.toString()
+                            },
                             onEliminarIngrediente    = { vm.eliminarIngrediente(it) },
                             onGuardarReceta          = { vm.guardarReceta() },
                             modifier                 = Modifier.fillMaxWidth().height(500.dp)
@@ -171,6 +182,44 @@ fun PantallaRecetas() {
                 }
             }
         }
+    }
+
+    if (ingredienteAEditar != null) {
+        AlertDialog(
+            onDismissRequest = { ingredienteAEditar = null },
+            title = { Text("Editar Cantidad de Ingrediente", fontWeight = FontWeight.Bold) },
+            text = {
+                Column {
+                    Text("Ingrediente: ${ingredienteAEditar?.nombreMateria}", fontSize = 14.sp)
+                    Spacer(modifier = Modifier.height(12.dp))
+                    OutlinedTextField(
+                        value = nuevaCantidadIngredienteInput,
+                        onValueChange = { nuevaCantidadIngredienteInput = it },
+                        label = { Text("Nueva Cantidad") },
+                        singleLine = true
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        val cant = nuevaCantidadIngredienteInput.toDoubleOrNull()
+                        if (cant != null && cant > 0) {
+                            vm.actualizarCantidadIngrediente(ingredienteAEditar!!, cant)
+                            ingredienteAEditar = null
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(backgroundColor = AppColors.Primary)
+                ) {
+                    Text("Guardar", color = AppColors.White)
+                }
+            },
+            dismissButton = {
+                OutlinedButton(onClick = { ingredienteAEditar = null }) {
+                    Text("Cancelar")
+                }
+            }
+        )
     }
 
     if (productoEditandoPrecio != null) {
@@ -309,47 +358,70 @@ private fun PanelProductosTerminados(
                     Text("Sin productos", color = AppColors.TextMuted, fontSize = 12.sp)
                 }
             } else {
-                LazyColumn(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                LazyVerticalGrid(
+                    columns = GridCells.Adaptive(minSize = 200.dp),
+                    contentPadding = PaddingValues(bottom = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier.fillMaxSize()
+                ) {
                     items(productos) { prod ->
                         val isSelected = seleccionado?.idProductoVenta == prod.idProductoVenta
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
+                        Card(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(
-                                    if (isSelected) AppColors.Primary.copy(alpha = 0.1f)
-                                    else Color.Transparent
-                                )
-                                .border(
-                                    width = if (isSelected) 1.dp else 0.dp,
-                                    color = if (isSelected) AppColors.Primary else Color.Transparent,
-                                    shape = RoundedCornerShape(8.dp)
-                                )
-                                .clickable { onSeleccionar(prod) }
-                                .padding(horizontal = 10.dp, vertical = 8.dp)
+                                .clickable { onSeleccionar(prod) },
+                            elevation = if (isSelected) 4.dp else 2.dp,
+                            shape = RoundedCornerShape(12.dp),
+                            backgroundColor = if (isSelected) AppColors.Primary.copy(alpha = 0.1f) else AppColors.CardBg,
+                            border = BorderStroke(
+                                1.dp, 
+                                if (isSelected) AppColors.Primary else AppColors.Divider
+                            )
                         ) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    text       = prod.nombre,
-                                    fontSize   = 13.sp,
-                                    fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
-                                    color      = if (isSelected) AppColors.Primary else AppColors.TextPrimary,
-                                    maxLines   = 1,
-                                    overflow   = TextOverflow.Ellipsis
-                                )
+                            Column(modifier = Modifier.padding(12.dp)) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.Top
+                                ) {
+                                    Text(
+                                        text       = prod.nombre,
+                                        fontSize   = 15.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color      = if (isSelected) AppColors.Primary else AppColors.TextPrimary,
+                                        maxLines   = 2,
+                                        overflow   = TextOverflow.Ellipsis,
+                                        modifier   = Modifier.weight(1f)
+                                    )
+                                    IconButton(
+                                        onClick = { onEditarPrecio(prod) }, 
+                                        modifier = Modifier.size(24.dp)
+                                    ) {
+                                        Icon(
+                                            Icons.Default.Edit,
+                                            contentDescription = "Editar",
+                                            tint = AppColors.Primary,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                    }
+                                }
+                                
+                                Spacer(modifier = Modifier.height(8.dp))
+                                
                                 Text(
                                     text     = prod.categoria,
                                     fontSize = 11.sp,
                                     color    = AppColors.TextMuted
                                 )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text     = "COP %.2f".format(prod.precioVenta),
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    color    = AppColors.Success
+                                )
                             }
-                            Text(
-                                text     = "Q%.0f".format(prod.precioVenta),
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Medium,
-                                color    = AppColors.Success
-                            )
                         }
                     }
                 }
@@ -367,10 +439,8 @@ private fun PanelEditorReceta(
     onMateriaPrimaChange: (Producto?) -> Unit,
     cantidadInput: String,
     onCantidadChange: (String) -> Unit,
-    unidadSeleccionada: String,
-    onUnidadChange: (String) -> Unit,
-    unidades: List<String>,
     onAgregarIngrediente: () -> Unit,
+    onEditarIngrediente: (RecetaIngrediente) -> Unit,
     onEliminarIngrediente: (RecetaIngrediente) -> Unit,
     onGuardarReceta: () -> Unit,
     modifier: Modifier = Modifier
@@ -448,7 +518,7 @@ private fun PanelEditorReceta(
                     materiasPrimas           = materiasPrimas,
                     materiaPrimaSeleccionada = materiaPrimaSeleccionada,
                     onSeleccionar            = onMateriaPrimaChange,
-                    modifier                 = Modifier.weight(2f)
+                    modifier                 = Modifier.weight(2.5f)
                 )
                 OutlinedTextField(
                     value         = cantidadInput,
@@ -459,13 +529,7 @@ private fun PanelEditorReceta(
                         focusedBorderColor   = AppColors.Primary,
                         unfocusedBorderColor = AppColors.Divider
                     ),
-                    modifier = Modifier.weight(1f)
-                )
-                SelectorUnidad(
-                    unidades           = unidades,
-                    unidadSeleccionada = unidadSeleccionada,
-                    onSeleccionar      = onUnidadChange,
-                    modifier           = Modifier.weight(1f)
+                    modifier = Modifier.weight(1.5f)
                 )
                 Button(
                     onClick = onAgregarIngrediente,
@@ -474,7 +538,7 @@ private fun PanelEditorReceta(
                     elevation = ButtonDefaults.elevation(defaultElevation = 0.dp),
                     contentPadding = PaddingValues(horizontal = 14.dp, vertical = 12.dp)
                 ) {
-                    Icon(Icons.Default.Add, contentDescription = "Agregar", tint = AppColors.White, modifier = Modifier.size(18.dp))
+                    Text("Agregar", color = AppColors.White, fontSize = 13.sp)
                 }
             }
 
@@ -490,8 +554,7 @@ private fun PanelEditorReceta(
             ) {
                 Text("Materia Prima",   modifier = Modifier.weight(3f), fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = AppColors.TextMuted)
                 Text("Cantidad",        modifier = Modifier.weight(1.5f), fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = AppColors.TextMuted)
-                Text("Unidad",          modifier = Modifier.weight(1.5f), fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = AppColors.TextMuted)
-                Spacer(modifier = Modifier.width(40.dp))
+                Spacer(modifier = Modifier.width(64.dp))
             }
             Spacer(modifier = Modifier.height(4.dp))
 
@@ -511,6 +574,7 @@ private fun PanelEditorReceta(
                     items(ingredientes) { ing ->
                         FilaIngrediente(
                             ingrediente = ing,
+                            onEditar    = { onEditarIngrediente(ing) },
                             onEliminar  = { onEliminarIngrediente(ing) }
                         )
                     }
@@ -523,6 +587,7 @@ private fun PanelEditorReceta(
 @Composable
 private fun FilaIngrediente(
     ingrediente: RecetaIngrediente,
+    onEditar: () -> Unit,
     onEliminar: () -> Unit
 ) {
     Row(
@@ -552,22 +617,29 @@ private fun FilaIngrediente(
             color    = AppColors.TextPrimary,
             modifier = Modifier.weight(1.5f)
         )
-        Text(
-            text     = ingrediente.unidad,
-            fontSize = 13.sp,
-            color    = AppColors.TextMuted,
-            modifier = Modifier.weight(1.5f)
-        )
-        IconButton(
-            onClick  = onEliminar,
-            modifier = Modifier.size(32.dp)
-        ) {
-            Icon(
-                Icons.Default.Delete,
-                contentDescription = "Eliminar ingrediente",
-                tint = AppColors.Danger,
-                modifier = Modifier.size(16.dp)
-            )
+        Row {
+            IconButton(
+                onClick  = onEditar,
+                modifier = Modifier.size(32.dp)
+            ) {
+                Icon(
+                    Icons.Default.Edit,
+                    contentDescription = "Editar cantidad",
+                    tint = AppColors.Primary,
+                    modifier = Modifier.size(16.dp)
+                )
+            }
+            IconButton(
+                onClick  = onEliminar,
+                modifier = Modifier.size(32.dp)
+            ) {
+                Icon(
+                    Icons.Default.Delete,
+                    contentDescription = "Eliminar ingrediente",
+                    tint = AppColors.Danger,
+                    modifier = Modifier.size(16.dp)
+                )
+            }
         }
     }
 }
