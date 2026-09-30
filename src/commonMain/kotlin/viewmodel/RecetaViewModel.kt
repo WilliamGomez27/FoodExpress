@@ -138,6 +138,16 @@ class RecetaViewModel(private val scope: CoroutineScope) {
         ingredientes = ingredientes.filter { it != ingrediente }
     }
 
+    fun actualizarCantidadIngrediente(ingrediente: RecetaIngrediente, nuevaCantidad: Double) {
+        ingredientes = ingredientes.map {
+            if (it.idProducto == ingrediente.idProducto) {
+                it.copy(cantidad = nuevaCantidad)
+            } else {
+                it
+            }
+        }
+    }
+
     fun guardarReceta() {
         val prodSel = productoSeleccionado
         if (prodSel == null) {

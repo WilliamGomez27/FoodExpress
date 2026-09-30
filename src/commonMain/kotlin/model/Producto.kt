@@ -7,5 +7,6 @@ data class Producto(
     var pesoLibras: Double,
     var precioVenta: Double,
     var stockActual: Int,
-    val stockMinimo: Int
+    val stockMinimo: Int,
+    var imagenUrl: String? = null
 )

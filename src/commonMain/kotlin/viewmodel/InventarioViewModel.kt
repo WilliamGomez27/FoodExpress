@@ -19,7 +19,7 @@ class InventarioViewModel(private val scope: CoroutineScope) {
 
     var cantidad        by mutableStateOf("")
 
-    var motivo          by mutableStateOf("Venta")
+    var motivo          by mutableStateOf("Entrada (Compra)")
 
     var cargando        by mutableStateOf(false)
         private set
@@ -27,7 +27,7 @@ class InventarioViewModel(private val scope: CoroutineScope) {
     var mensajeSnackbar by mutableStateOf<String?>(null)
         private set
 
-    val motivos = listOf("Venta", "Ajuste", "Devolución", "Consumos")
+    val motivos = listOf("Entrada (Compra)", "Ajuste de Entrada", "Ajuste de Salida", "Devolución", "Consumo/Merma")
 
     fun cargarProductos() {
         scope.launch {
@@ -52,7 +52,7 @@ class InventarioViewModel(private val scope: CoroutineScope) {
             return
         }
 
-        val esEntrada = (motivo == "Ajuste" || motivo == "Devolución")
+        val esEntrada = (motivo == "Entrada (Compra)" || motivo == "Ajuste de Entrada" || motivo == "Devolución")
         if (!esEntrada && (producto.stockActual - cant < 0)) {
             mensajeSnackbar = "⚠️ No hay stock suficiente (Stock actual: ${producto.stockActual})"
             return
@@ -83,6 +83,40 @@ class InventarioViewModel(private val scope: CoroutineScope) {
                 productos = repository.obtenerProductos()
             } else {
                 mensajeSnackbar = "❌ Error al crear el producto"
+            }
+            cargando = false
+        }
+    }
+
+    fun actualizarProducto(producto: Producto) {
+        scope.launch {
+            cargando = true
+            val exito = repository.actualizarProducto(producto)
+            if (exito) {
+                mensajeSnackbar = "✅ Producto '${producto.nombre}' actualizado exitosamente"
+                productos = repository.obtenerProductos()
+                if (productoSel?.idProducto == producto.idProducto) {
+                    productoSel = productos.find { it.idProducto == producto.idProducto }
+                }
+            } else {
+                mensajeSnackbar = "❌ Error al actualizar el producto"
+            }
+            cargando = false
+        }
+    }
+
+    fun eliminarProducto(idProducto: Int) {
+        scope.launch {
+            cargando = true
+            val exito = repository.eliminarProducto(idProducto)
+            if (exito) {
+                mensajeSnackbar = "✅ Producto eliminado exitosamente"
+                productos = repository.obtenerProductos()
+                if (productoSel?.idProducto == idProducto) {
+                    productoSel = productos.firstOrNull()
+                }
+            } else {
+                mensajeSnackbar = "❌ Error al eliminar el producto. Verifica que no tenga movimientos o ventas asociadas."
             }
             cargando = false
         }

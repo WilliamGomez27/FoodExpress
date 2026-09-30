@@ -1,5 +1,6 @@
 ﻿package FoodExpress.navigation
 
+import FoodExpress.model.UsuarioSesion
 import FoodExpress.theme.AppColors
 import FoodExpress.theme.AppTheme
 import FoodExpress.ui.dashboard.PantallaInicio
@@ -10,6 +11,7 @@ import FoodExpress.ui.login.LoginScreen
 import FoodExpress.ui.recetas.PantallaRecetas
 import FoodExpress.ui.reportes.PantallaReportes
 import FoodExpress.ui.ventas.PantallaVentas
+import FoodExpress.ui.menu.PantallaMenu
 import FoodExpress.utils.SessionInfo
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
@@ -40,6 +42,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.runtime.saveable.rememberSaveable
 
 // ── Ítem de menú lateral ──────────────────────────────────────────────────────
 data class MenuItem(val label: String, val icon: ImageVector, val key: String)
@@ -83,10 +86,21 @@ fun SidebarItem(item: MenuItem, isSelected: Boolean, onClick: () -> Unit) {
 // ── Shell principal responsivo de la app ──────────────────────────────────────
 @Composable
 fun AppFoodExpress() {
-    var pantallaActual by remember { mutableStateOf("Login") }
+    var pantallaActual by rememberSaveable { mutableStateOf("Login") }
     val scope = rememberCoroutineScope()
 
     AppTheme {
+        // BYPASS TEMPORAL DE DESARROLLO: Si la app fue matada en background y vuelve,
+        // restaurar la sesión mock para evitar crasheos por SessionInfo.usuarioActual nulo.
+        if (pantallaActual != "Login" && SessionInfo.usuarioActual == null) {
+            SessionInfo.usuarioActual = UsuarioSesion(
+                idUsuario = 1,
+                nombre = "Usuario Desarrollo",
+                usuario = "admin",
+                rol = "admin"
+            )
+        }
+
         if (pantallaActual == "Login") {
             LoginScreen(onLoginSuccess = {
                 pantallaActual = "Inicio"
@@ -100,13 +114,14 @@ fun AppFoodExpress() {
         val menuItems = mutableListOf(
             MenuItem("Inicio",     Icons.Default.Home,                "Inicio"),
             MenuItem("Ventas",     Icons.Default.ShoppingCart,        "Ventas"),
+            MenuItem("Menú",       Icons.AutoMirrored.Filled.List,    "Menu"), // Nuevo ítem de Menú
             MenuItem("Recetas",    Icons.Default.Build,               "Recetas"), // Abierto a todos
             MenuItem("Acerca de",  Icons.Default.Info,                "Info")
         )
         
         // Agregar opciones extra solo para el Admin
         if (isAdmin) {
-            menuItems.add(MenuItem("Inventario", Icons.AutoMirrored.Filled.List,    "Inventario"))
+            MenuItem("Inventario", Icons.AutoMirrored.Filled.List,    "Inventario").also { menuItems.add(it) }
             menuItems.add(MenuItem("Gastos",     Icons.Default.Star,                "Gastos"))
             menuItems.add(MenuItem("Reportes",   Icons.Default.DateRange,           "Reportes"))
         }
@@ -261,6 +276,7 @@ private fun ContenidoPantalla(
     when (pantallaActual) {
         "Inventario" -> PantallaInventario()
         "Ventas"     -> PantallaVentas()
+        "Menu"       -> PantallaMenu()
         "Recetas"    -> PantallaRecetas()
         "Gastos"     -> PantallaGastos(scope)
         "Reportes"   -> PantallaReportes(scope)

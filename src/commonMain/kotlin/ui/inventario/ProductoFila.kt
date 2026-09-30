@@ -2,7 +2,9 @@
 
 import FoodExpress.model.Producto
 import FoodExpress.theme.AppColors
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
@@ -17,63 +19,74 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-@Composable
-fun ProductoFila(producto: Producto, isSelected: Boolean, onClick: () -> Unit) {
-    val bg = if (isSelected) AppColors.Primary.copy(alpha = 0.06f) else Color.Transparent
-    val stockBajo = producto.stockActual <= producto.stockMinimo
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.IconButton
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Card
 
-    Row(
+@Composable
+fun ProductoCard(
+    producto: Producto, 
+    isSelected: Boolean, 
+    onClick: () -> Unit,
+    onEdit: () -> Unit,
+    onDelete: () -> Unit
+) {
+    val stockBajo = producto.stockActual <= producto.stockMinimo
+    val borderColor = if (isSelected) AppColors.Primary else if (stockBajo) AppColors.Danger else AppColors.Divider
+    val bgColor = if (isSelected) AppColors.Primary.copy(alpha = 0.05f) else AppColors.CardBg
+
+    Card(
         modifier = Modifier
             .fillMaxWidth()
-            .background(bg)
-            .padding(horizontal = 16.dp, vertical = 10.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .padding(4.dp),
+        elevation = if (isSelected) 4.dp else 1.dp,
+        shape = RoundedCornerShape(12.dp),
+        backgroundColor = bgColor,
+        border = BorderStroke(1.dp, borderColor)
     ) {
-        TextButton(
-            onClick = onClick,
-            modifier = Modifier.weight(2.5f),
-            contentPadding = PaddingValues(0.dp)
+        Column(
+            modifier = Modifier
+                .clickable { onClick() }
+                .padding(12.dp)
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                if (stockBajo) {
-                    Icon(
-                        Icons.Default.Warning,
-                        contentDescription = "Stock bajo",
-                        tint = AppColors.Danger,
-                        modifier = Modifier.size(14.dp).padding(end = 2.dp)
-                    )
-                }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Top
+            ) {
                 Text(
                     text = producto.nombre,
-                    fontSize = 13.sp,
-                    fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
-                    color = if (isSelected) AppColors.Primary else AppColors.TextPrimary
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = AppColors.TextPrimary,
+                    modifier = Modifier.weight(1f)
                 )
+                
+                Row {
+                    IconButton(onClick = onEdit, modifier = Modifier.size(24.dp)) {
+                        Icon(Icons.Default.Edit, contentDescription = "Editar", tint = AppColors.Primary, modifier = Modifier.size(16.dp))
+                    }
+                    Spacer(modifier = Modifier.width(4.dp))
+                    IconButton(onClick = onDelete, modifier = Modifier.size(24.dp)) {
+                        Icon(Icons.Default.Delete, contentDescription = "Eliminar", tint = AppColors.Danger, modifier = Modifier.size(16.dp))
+                    }
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Column {
+                    Text("Stock: ${producto.stockActual}", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = if (stockBajo) AppColors.Danger else AppColors.TextPrimary)
+                    Text("Mínimo: ${producto.stockMinimo}", fontSize = 11.sp, color = AppColors.TextMuted)
+                }
+                Column(horizontalAlignment = Alignment.End) {
+                    Text("Precio Venta", fontSize = 11.sp, color = AppColors.TextMuted)
+                    Text("COP %.2f".format(producto.precioVenta), fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = AppColors.Success)
+                }
             }
         }
-
-        Text(
-            text = "${producto.stockActual}",
-            modifier = Modifier.weight(1f),
-            fontSize = 13.sp,
-            color = if (stockBajo) AppColors.Danger else AppColors.TextPrimary,
-            fontWeight = if (stockBajo) FontWeight.Bold else FontWeight.Normal
-        )
-
-        Text(
-            text = "${producto.stockMinimo}",
-            modifier = Modifier.weight(1f),
-            fontSize = 13.sp,
-            color = AppColors.TextMuted
-        )
-
-        Text(
-            text = "COP %.2f".format(producto.precioVenta),
-            modifier = Modifier.weight(1.2f),
-            fontSize = 13.sp,
-            color = AppColors.TextPrimary
-        )
-
-        StockBadge(stockBajo = stockBajo, modifier = Modifier.weight(1.5f))
     }
 }

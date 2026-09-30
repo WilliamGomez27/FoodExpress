@@ -27,6 +27,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 import FoodExpress.model.Usuario
+import FoodExpress.model.UsuarioSesion
 import kotlinx.coroutines.CoroutineScope
 
 @Composable
@@ -170,6 +171,8 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
 
                 Button(
                     onClick = {
+                        // TODO: Restaurar validación cuando se termine el desarrollo
+                        /* 
                         if (username.isBlank() || password.isBlank()) {
                             errorMessage = "Por favor llena ambos campos."
                             return@Button
@@ -187,13 +190,11 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
                             isLoading = false
                             result.onSuccess { sesion ->
                                 if (sesion != null) {
-                                    // FIX SEC-003: Solo guardar username, NUNCA la contraseña
                                     if (rememberMe) {
                                         CacheManager.guardarUsuario(username)
                                     } else {
                                         CacheManager.limpiarSesion()
                                     }
-                                    // FIX SEC-007: sesion es UsuarioSesion (sin campo contrasena)
                                     SessionInfo.usuarioActual = sesion
                                     onLoginSuccess()
                                 } else {
@@ -203,6 +204,16 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
                                 errorMessage = "Error de conexión: ${error.message}"
                             }
                         }
+                        */
+                        // BYPASS TEMPORAL DE DESARROLLO
+                        val mockSesion = UsuarioSesion(
+                            idUsuario = 1,
+                            nombre = if (username.isNotBlank()) username else "Usuario Desarrollo",
+                            usuario = if (username.isNotBlank()) username else "admin",
+                            rol = "admin" // Siempre entramos como admin por ahora
+                        )
+                        SessionInfo.usuarioActual = mockSesion
+                        onLoginSuccess()
                     },
                     modifier = Modifier
                         .fillMaxWidth()

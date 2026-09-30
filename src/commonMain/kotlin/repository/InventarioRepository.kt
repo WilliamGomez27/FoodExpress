@@ -1,6 +1,7 @@
 ﻿package FoodExpress.repository
 
 import FoodExpress.dao.InventarioDAO
+import FoodExpress.dao.ProductoDAO
 import FoodExpress.model.Producto
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -25,5 +26,15 @@ class InventarioRepository {
     suspend fun insertarProducto(producto: Producto): Boolean = withContext(Dispatchers.IO) {
         val productoDao = FoodExpress.dao.ProductoDAO()
         productoDao.insertar(producto)
+    }
+
+    suspend fun actualizarProducto(producto: Producto): Boolean = withContext(Dispatchers.IO) {
+        val productoDao = ProductoDAO()
+        productoDao.actualizar(producto)
+    }
+
+    suspend fun eliminarProducto(idProducto: Int): Boolean = withContext(Dispatchers.IO) {
+        val productoDao = ProductoDAO()
+        productoDao.eliminar(idProducto)
     }
 }
