@@ -21,6 +21,9 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.ImeAction
 import FoodExpress.utils.CacheManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -56,6 +59,18 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
             rememberMe = true
             // password queda vacío — el usuario lo escribe siempre
         }
+    }
+
+    val performLogin: () -> Unit = {
+        // BYPASS TEMPORAL DE DESARROLLO
+        val mockSesion = UsuarioSesion(
+            idUsuario = 1,
+            nombre = if (username.isNotBlank()) username else "Usuario Desarrollo",
+            usuario = if (username.isNotBlank()) username else "admin",
+            rol = "admin" // Siempre entramos como admin por ahora
+        )
+        SessionInfo.usuarioActual = mockSesion
+        onLoginSuccess()
     }
 
     Box(
@@ -105,6 +120,7 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
                     leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                     colors = TextFieldDefaults.outlinedTextFieldColors(
                         focusedBorderColor = AppColors.Primary,
                         cursorColor = AppColors.Primary
@@ -129,6 +145,8 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
                     visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                    keyboardActions = KeyboardActions(onDone = { performLogin() }),
                     colors = TextFieldDefaults.outlinedTextFieldColors(
                         focusedBorderColor = AppColors.Primary,
                         cursorColor = AppColors.Primary
@@ -170,51 +188,7 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Button(
-                    onClick = {
-                        // TODO: Restaurar validación cuando se termine el desarrollo
-                        /* 
-                        if (username.isBlank() || password.isBlank()) {
-                            errorMessage = "Por favor llena ambos campos."
-                            return@Button
-                        }
-                        
-                        isLoading = true
-                        errorMessage = ""
-                        infoMessage = ""
-                        
-                        scope.launch {
-                            val result = withContext(Dispatchers.IO) {
-                                dao.obtenerPorCredenciales(username, password)
-                            }
-                            
-                            isLoading = false
-                            result.onSuccess { sesion ->
-                                if (sesion != null) {
-                                    if (rememberMe) {
-                                        CacheManager.guardarUsuario(username)
-                                    } else {
-                                        CacheManager.limpiarSesion()
-                                    }
-                                    SessionInfo.usuarioActual = sesion
-                                    onLoginSuccess()
-                                } else {
-                                    errorMessage = "Credenciales incorrectas."
-                                }
-                            }.onFailure { error ->
-                                errorMessage = "Error de conexión: ${error.message}"
-                            }
-                        }
-                        */
-                        // BYPASS TEMPORAL DE DESARROLLO
-                        val mockSesion = UsuarioSesion(
-                            idUsuario = 1,
-                            nombre = if (username.isNotBlank()) username else "Usuario Desarrollo",
-                            usuario = if (username.isNotBlank()) username else "admin",
-                            rol = "admin" // Siempre entramos como admin por ahora
-                        )
-                        SessionInfo.usuarioActual = mockSesion
-                        onLoginSuccess()
-                    },
+                    onClick = performLogin,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(48.dp),

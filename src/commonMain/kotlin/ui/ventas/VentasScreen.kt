@@ -32,11 +32,17 @@ import androidx.compose.foundation.lazy.grid.items
 import coil3.compose.AsyncImage
 import androidx.compose.ui.layout.ContentScale
 
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.platform.LocalFocusManager
+
 @Composable
 fun PantallaVentas() {
     val scope         = rememberCoroutineScope()
     val vm            = remember { VentasViewModel(scope) }
     val scaffoldState = rememberScaffoldState()
+    val focusManager  = LocalFocusManager.current
     var busqueda      by remember { mutableStateOf("") }
 
     LaunchedEffect(Unit) { vm.cargarDatos() }
@@ -71,6 +77,8 @@ fun PantallaVentas() {
                         onValueChange = { busqueda = it },
                         placeholder = { Text("Buscar producto...") },
                         singleLine = true,
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                        keyboardActions = KeyboardActions(onSearch = { focusManager.clearFocus() }),
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(10.dp),
                         colors = TextFieldDefaults.outlinedTextFieldColors(

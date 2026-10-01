@@ -21,11 +21,17 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.items
 
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.platform.LocalFocusManager
+
 @Composable
 fun PantallaInventario() {
     val scope         = rememberCoroutineScope()
     val vm            = remember { InventarioViewModel(scope) }
     val scaffoldState = rememberScaffoldState()
+    val focusManager  = LocalFocusManager.current
     var expandido     by remember { mutableStateOf("") }
     var mostrarDialogoNuevoProducto by remember { mutableStateOf(false) }
     var productoAEditar by remember { mutableStateOf<Producto?>(null) }
@@ -213,6 +219,11 @@ fun PantallaInventario() {
                             onValueChange = { vm.cantidad = it },
                             placeholder = { Text("Ej: 10") },
                             singleLine = true,
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                            keyboardActions = KeyboardActions(onDone = { 
+                                focusManager.clearFocus()
+                                vm.registrarMovimiento() 
+                            }),
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(8.dp),
                             colors = TextFieldDefaults.outlinedTextFieldColors(
@@ -268,6 +279,8 @@ fun PantallaInventario() {
                         onValueChange = { nombre = it },
                         label = { Text("Nombre") },
                         modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                         shape = RoundedCornerShape(8.dp),
                         colors = TextFieldDefaults.outlinedTextFieldColors(focusedBorderColor = AppColors.Primary)
                     )
@@ -276,6 +289,8 @@ fun PantallaInventario() {
                         onValueChange = { unidadesPaq = it },
                         label = { Text("Unidades por Paq.") },
                         modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                         shape = RoundedCornerShape(8.dp),
                         colors = TextFieldDefaults.outlinedTextFieldColors(focusedBorderColor = AppColors.Primary)
                     )
@@ -284,6 +299,8 @@ fun PantallaInventario() {
                         onValueChange = { pesoLibras = it },
                         label = { Text("Peso (libras)") },
                         modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                         shape = RoundedCornerShape(8.dp),
                         colors = TextFieldDefaults.outlinedTextFieldColors(focusedBorderColor = AppColors.Primary)
                     )
@@ -292,6 +309,8 @@ fun PantallaInventario() {
                         onValueChange = { precioVenta = it },
                         label = { Text("Precio de Venta") },
                         modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                         shape = RoundedCornerShape(8.dp),
                         colors = TextFieldDefaults.outlinedTextFieldColors(focusedBorderColor = AppColors.Primary)
                     )
@@ -300,6 +319,8 @@ fun PantallaInventario() {
                         onValueChange = { stockActual = it },
                         label = { Text("Stock Actual") },
                         modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                         shape = RoundedCornerShape(8.dp),
                         colors = TextFieldDefaults.outlinedTextFieldColors(focusedBorderColor = AppColors.Primary)
                     )
@@ -308,6 +329,26 @@ fun PantallaInventario() {
                         onValueChange = { stockMinimo = it },
                         label = { Text("Stock Mínimo") },
                         modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                        keyboardActions = KeyboardActions(onDone = {
+                            val prod = Producto(
+                                idProducto = productoAEditar?.idProducto ?: 0,
+                                nombre = nombre,
+                                unidadesPaq = unidadesPaq.toIntOrNull() ?: 0,
+                                pesoLibras = pesoLibras.toDoubleOrNull() ?: 0.0,
+                                precioVenta = precioVenta.toDoubleOrNull() ?: 0.0,
+                                stockActual = stockActual.toIntOrNull() ?: 0,
+                                stockMinimo = stockMinimo.toIntOrNull() ?: 0
+                            )
+                            if (esEdicion) {
+                                vm.actualizarProducto(prod)
+                            } else {
+                                vm.registrarNuevoProducto(prod)
+                            }
+                            mostrarDialogoNuevoProducto = false
+                            productoAEditar = null
+                        }),
                         shape = RoundedCornerShape(8.dp),
                         colors = TextFieldDefaults.outlinedTextFieldColors(focusedBorderColor = AppColors.Primary)
                     )

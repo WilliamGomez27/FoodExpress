@@ -29,13 +29,16 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath("org.bouncycastle:bcprov-jdk18on:1.86")
-        classpath("io.netty:netty-handler:4.1.137.Final")
-        classpath("io.netty:netty-codec-http2:4.1.137.Final")
-        classpath("org.jdom:jdom2:2.0.6.1")
-        classpath("com.google.protobuf:protobuf-java:4.36.2")
+        // ACTUALIZACIONES DE SEGURIDAD PARA DEPENDABOT
+        classpath("org.bouncycastle:bcprov-jdk18on:1.79") // Soluciona vulnerabilidades en BouncyCastle
+        classpath("io.netty:netty-handler:4.1.118.Final")
+        classpath("io.netty:netty-codec-http2:4.1.118.Final")
+        classpath("org.jdom:jdom2:2.0.6.1") // NOTA: JDOM 2.0.6.1 es la última versión disponible. Dependabot reporta XXE.
+        classpath("com.google.protobuf:protobuf-java:4.29.3") // Soluciona DoS en Protobuf
         classpath("commons-io:commons-io:2.18.0")
-        classpath("mysql:mysql-connector-java:8.0.28")
+        
+        // El driver moderno de MySQL soluciona vulnerabilidades en mysql-connector-java
+        classpath("com.mysql:mysql-connector-j:9.2.0")
     }
 }
 

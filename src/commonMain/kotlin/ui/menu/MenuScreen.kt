@@ -25,11 +25,17 @@ import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import androidx.compose.ui.layout.ContentScale
 
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.ui.text.input.ImeAction
+
 @Composable
 fun PantallaMenu() {
     val scope = rememberCoroutineScope()
     // Reutilizamos el VentasViewModel porque ya tiene la lógica para traer el catálogo de productos disponibles
     val vm = remember { VentasViewModel(scope) }
+    val focusManager = LocalFocusManager.current
     var busqueda by remember { mutableStateOf("") }
 
     LaunchedEffect(Unit) { 
@@ -51,6 +57,8 @@ fun PantallaMenu() {
             onValueChange = { busqueda = it },
             placeholder = { Text("Buscar...") },
             singleLine = true,
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+            keyboardActions = KeyboardActions(onSearch = { focusManager.clearFocus() }),
             modifier = Modifier.fillMaxWidth(0.5f), // Mitad del ancho en escritorio
             shape = RoundedCornerShape(10.dp),
             colors = TextFieldDefaults.outlinedTextFieldColors(
