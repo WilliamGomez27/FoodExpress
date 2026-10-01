@@ -1,5 +1,12 @@
 -- Script SQL para la creación inicial de la base de datos "SuperMarket_db"
 -- Útil para documentación y recrear la BD de manera limpia desde 0.
+--
+-- MIGRACIÓN PARA BDs EXISTENTES:
+-- Si tu base de datos ya fue creada con una versión anterior de este script,
+-- ejecuta las siguientes líneas para agregar las columnas que faltan:
+--
+--   ALTER TABLE productos_venta ADD COLUMN IF NOT EXISTS imagen_url VARCHAR(500) NULL;
+--   ALTER TABLE productos       ADD COLUMN IF NOT EXISTS imagen_url VARCHAR(500) NULL;
 
 DROP DATABASE IF EXISTS SuperMarket_db;
 CREATE DATABASE SuperMarket_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -17,6 +24,7 @@ CREATE TABLE IF NOT EXISTS productos (
     precio_venta DOUBLE NOT NULL,
     stock_actual INT NOT NULL DEFAULT 0,
     stock_minimo INT NOT NULL DEFAULT 0,
+    imagen_url VARCHAR(500) NULL,
     CONSTRAINT chk_stock_no_negativo CHECK (stock_actual >= 0)
 ) ENGINE=InnoDB;
 
@@ -24,7 +32,8 @@ CREATE TABLE IF NOT EXISTS productos_venta (
     id_producto_venta INT AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(100) NOT NULL,
     precio_venta DOUBLE NOT NULL,
-    categoria VARCHAR(50) DEFAULT 'General'
+    categoria VARCHAR(50) DEFAULT 'General',
+    imagen_url VARCHAR(500) NULL
 ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS ventas (

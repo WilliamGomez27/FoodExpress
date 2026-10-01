@@ -14,12 +14,14 @@ kotlin {
     androidTarget {
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_21)
+            freeCompilerArgs.add("-Xexpect-actual-classes")
         }
     }
 
     jvm("desktop") {
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_21)
+            freeCompilerArgs.add("-Xexpect-actual-classes")
         }
     }
 

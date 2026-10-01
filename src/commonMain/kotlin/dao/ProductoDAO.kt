@@ -1,4 +1,4 @@
-﻿package FoodExpress.dao
+package FoodExpress.dao
 
 import FoodExpress.database.ConexionDB
 import FoodExpress.model.Producto
@@ -11,7 +11,7 @@ class ProductoDAO {
     fun obtenerPorId(id: Int): Producto? {
         val conexion = ConexionDB.getConexion() ?: return null
         var producto: Producto? = null
-        val sql = "SELECT id_producto, nombre, unidades_paq, peso_libras, precio_venta, stock_actual, stock_minimo FROM productos WHERE id_producto = ?"
+        val sql = "SELECT id_producto, nombre, unidades_paq, peso_libras, precio_venta, stock_actual, stock_minimo, imagen_url FROM productos WHERE id_producto = ?"
         try {
             conexion.use { conn ->
                 conn.prepareStatement(sql).use { stmt ->
@@ -25,7 +25,8 @@ class ProductoDAO {
                             pesoLibras   = rs.getDouble("peso_libras"),
                             precioVenta  = rs.getDouble("precio_venta"),
                             stockActual  = rs.getInt("stock_actual"),
-                            stockMinimo  = rs.getInt("stock_minimo")
+                            stockMinimo  = rs.getInt("stock_minimo"),
+                            imagenUrl    = rs.getString("imagen_url")
                         )
                     }
                 }
@@ -38,7 +39,7 @@ class ProductoDAO {
 
     fun insertar(producto: Producto): Boolean {
         val conexion = ConexionDB.getConexion() ?: return false
-        val sql = "INSERT INTO productos (nombre, unidades_paq, peso_libras, precio_venta, stock_actual, stock_minimo) VALUES (?, ?, ?, ?, ?, ?)"
+        val sql = "INSERT INTO productos (nombre, unidades_paq, peso_libras, precio_venta, stock_actual, stock_minimo, imagen_url) VALUES (?, ?, ?, ?, ?, ?, ?)"
         return try {
             conexion.use { conn ->
                 conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS).use { stmt ->
@@ -48,6 +49,7 @@ class ProductoDAO {
                     stmt.setDouble(4, producto.precioVenta)
                     stmt.setInt(5, producto.stockActual)
                     stmt.setInt(6, producto.stockMinimo)
+                    stmt.setString(7, producto.imagenUrl)
                     stmt.executeUpdate() > 0
                 }
             }
@@ -59,7 +61,7 @@ class ProductoDAO {
 
     fun actualizar(producto: Producto): Boolean {
         val conexion = ConexionDB.getConexion() ?: return false
-        val sql = "UPDATE productos SET nombre = ?, unidades_paq = ?, peso_libras = ?, precio_venta = ?, stock_actual = ?, stock_minimo = ? WHERE id_producto = ?"
+        val sql = "UPDATE productos SET nombre = ?, unidades_paq = ?, peso_libras = ?, precio_venta = ?, stock_actual = ?, stock_minimo = ?, imagen_url = ? WHERE id_producto = ?"
         return try {
             conexion.use { conn ->
                 conn.prepareStatement(sql).use { stmt ->
@@ -69,7 +71,8 @@ class ProductoDAO {
                     stmt.setDouble(4, producto.precioVenta)
                     stmt.setInt(5, producto.stockActual)
                     stmt.setInt(6, producto.stockMinimo)
-                    stmt.setInt(7, producto.idProducto)
+                    stmt.setString(7, if (producto.imagenUrl.isNullOrBlank()) null else producto.imagenUrl)
+                    stmt.setInt(8, producto.idProducto)
                     stmt.executeUpdate() > 0
                 }
             }

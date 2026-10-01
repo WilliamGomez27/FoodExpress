@@ -1,4 +1,4 @@
-﻿package FoodExpress.ui.ventas
+package FoodExpress.ui.ventas
 
 import FoodExpress.model.ItemVenta
 import FoodExpress.model.ProductoVenta
@@ -201,15 +201,29 @@ fun CatalogoCard(producto: ProductoVenta, enCarrito: Int, onAgregar: () -> Unit)
             modifier = Modifier.padding(12.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            val urlImagen = ImageHelper.obtenerImagenParaProducto(producto.idProductoVenta, producto.imagenUrl)
-            AsyncImage(
-                model = urlImagen,
-                contentDescription = producto.nombre,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .size(60.dp)
-                    .clip(RoundedCornerShape(10.dp))
-            )
+            val urlImagen = ImageHelper.obtenerImagenParaProducto(producto.imagenUrl)
+                ?: ImageHelper.fallbackPorNombre(producto.nombre)
+            if (urlImagen != null) {
+                AsyncImage(
+                    model = urlImagen,
+                    contentDescription = producto.nombre,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .size(60.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                )
+            } else {
+                // Placeholder genérico cuando no hay imagen en la BD
+                Box(
+                    modifier = Modifier
+                        .size(60.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(AppColors.Primary.copy(alpha = 0.1f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(text = "🍽️", fontSize = 26.sp)
+                }
+            }
             
             Spacer(modifier = Modifier.height(8.dp))
             

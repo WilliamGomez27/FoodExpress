@@ -90,7 +90,8 @@ fun PantallaMenu() {
 @Composable
 fun MenuCard(producto: ProductoVenta) {
     var mostrarZoom by remember { mutableStateOf(false) }
-    val urlImagen = ImageHelper.obtenerImagenParaProducto(producto.idProductoVenta, producto.imagenUrl)
+    val urlImagen = ImageHelper.obtenerImagenParaProducto(producto.imagenUrl)
+        ?: ImageHelper.fallbackPorNombre(producto.nombre)
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -112,12 +113,21 @@ fun MenuCard(producto: ProductoVenta) {
                     .clickable { mostrarZoom = true },
                 contentAlignment = Alignment.Center
             ) {
-                AsyncImage(
-                    model = urlImagen,
-                    contentDescription = producto.nombre,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize()
-                )
+                if (urlImagen != null) {
+                    AsyncImage(
+                        model = urlImagen,
+                        contentDescription = producto.nombre,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                } else {
+                    // Placeholder genérico cuando no hay imagen en la BD
+                    Text(
+                        text = "🍽️",
+                        fontSize = 40.sp,
+                        textAlign = TextAlign.Center
+                    )
+                }
             }
             
             Spacer(modifier = Modifier.height(12.dp))

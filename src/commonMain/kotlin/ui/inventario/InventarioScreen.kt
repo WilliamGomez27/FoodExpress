@@ -1,4 +1,4 @@
-﻿package FoodExpress.ui.inventario
+package FoodExpress.ui.inventario
 
 import FoodExpress.theme.AppColors
 import FoodExpress.viewmodel.InventarioViewModel
@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
+import androidx.compose.material.TextFieldDefaults
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -15,11 +16,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-
+import FoodExpress.model.Producto
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.items
-import FoodExpress.model.Producto
 
 @Composable
 fun PantallaInventario() {
@@ -247,12 +247,13 @@ fun PantallaInventario() {
 
     if (mostrarDialogoNuevoProducto || productoAEditar != null) {
         val esEdicion = productoAEditar != null
-        var nombre by remember { mutableStateOf(productoAEditar?.nombre ?: "") }
+        var nombre      by remember { mutableStateOf(productoAEditar?.nombre ?: "") }
         var unidadesPaq by remember { mutableStateOf(productoAEditar?.unidadesPaq?.toString() ?: "") }
-        var pesoLibras by remember { mutableStateOf(productoAEditar?.pesoLibras?.toString() ?: "") }
+        var pesoLibras  by remember { mutableStateOf(productoAEditar?.pesoLibras?.toString() ?: "") }
         var precioVenta by remember { mutableStateOf(productoAEditar?.precioVenta?.toString() ?: "") }
         var stockActual by remember { mutableStateOf(productoAEditar?.stockActual?.toString() ?: "") }
         var stockMinimo by remember { mutableStateOf(productoAEditar?.stockMinimo?.toString() ?: "") }
+        var imagenUrl   by remember { mutableStateOf(productoAEditar?.imagenUrl ?: "") }
 
         AlertDialog(
             onDismissRequest = { 
@@ -262,25 +263,87 @@ fun PantallaInventario() {
             title = { Text(if (esEdicion) "Editar Producto" else "Nuevo Producto", fontWeight = FontWeight.Bold) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlinedTextField(value = nombre, onValueChange = { nombre = it }, label = { Text("Nombre") })
-                    OutlinedTextField(value = unidadesPaq, onValueChange = { unidadesPaq = it }, label = { Text("Unidades por Paq.") })
-                    OutlinedTextField(value = pesoLibras, onValueChange = { pesoLibras = it }, label = { Text("Peso (libras)") })
-                    OutlinedTextField(value = precioVenta, onValueChange = { precioVenta = it }, label = { Text("Precio de Venta") })
-                    OutlinedTextField(value = stockActual, onValueChange = { stockActual = it }, label = { Text("Stock Actual") })
-                    OutlinedTextField(value = stockMinimo, onValueChange = { stockMinimo = it }, label = { Text("Stock Mínimo") })
+                    OutlinedTextField(
+                        value = nombre,
+                        onValueChange = { nombre = it },
+                        label = { Text("Nombre") },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(8.dp),
+                        colors = TextFieldDefaults.outlinedTextFieldColors(focusedBorderColor = AppColors.Primary)
+                    )
+                    OutlinedTextField(
+                        value = unidadesPaq,
+                        onValueChange = { unidadesPaq = it },
+                        label = { Text("Unidades por Paq.") },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(8.dp),
+                        colors = TextFieldDefaults.outlinedTextFieldColors(focusedBorderColor = AppColors.Primary)
+                    )
+                    OutlinedTextField(
+                        value = pesoLibras,
+                        onValueChange = { pesoLibras = it },
+                        label = { Text("Peso (libras)") },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(8.dp),
+                        colors = TextFieldDefaults.outlinedTextFieldColors(focusedBorderColor = AppColors.Primary)
+                    )
+                    OutlinedTextField(
+                        value = precioVenta,
+                        onValueChange = { precioVenta = it },
+                        label = { Text("Precio de Venta") },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(8.dp),
+                        colors = TextFieldDefaults.outlinedTextFieldColors(focusedBorderColor = AppColors.Primary)
+                    )
+                    OutlinedTextField(
+                        value = stockActual,
+                        onValueChange = { stockActual = it },
+                        label = { Text("Stock Actual") },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(8.dp),
+                        colors = TextFieldDefaults.outlinedTextFieldColors(focusedBorderColor = AppColors.Primary)
+                    )
+                    OutlinedTextField(
+                        value = stockMinimo,
+                        onValueChange = { stockMinimo = it },
+                        label = { Text("Stock Mínimo") },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(8.dp),
+                        colors = TextFieldDefaults.outlinedTextFieldColors(focusedBorderColor = AppColors.Primary)
+                    )
+
+                    Divider(color = AppColors.Divider, thickness = 0.5.dp)
+
+                    // Campo para pegar URL de imagen del producto
+                    OutlinedTextField(
+                        value = imagenUrl,
+                        onValueChange = { imagenUrl = it },
+                        label = { Text("🖼️ URL de Imagen") },
+                        placeholder = { Text("https://... ó dejar vacío", fontSize = 12.sp) },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
+                        shape = RoundedCornerShape(8.dp),
+                        colors = TextFieldDefaults.outlinedTextFieldColors(focusedBorderColor = AppColors.Primary)
+                    )
+                    Text(
+                        text = "Pega una URL pública de imagen. Déjalo vacío para el 🍽️ genérico.",
+                        fontSize = 10.sp,
+                        color = AppColors.TextMuted
+                    )
                 }
             },
             confirmButton = {
                 Button(
                     onClick = {
                         val prod = Producto(
-                            idProducto = productoAEditar?.idProducto ?: 0,
-                            nombre = nombre,
+                            idProducto  = productoAEditar?.idProducto ?: 0,
+                            nombre      = nombre,
                             unidadesPaq = unidadesPaq.toIntOrNull() ?: 0,
-                            pesoLibras = pesoLibras.toDoubleOrNull() ?: 0.0,
+                            pesoLibras  = pesoLibras.toDoubleOrNull() ?: 0.0,
                             precioVenta = precioVenta.toDoubleOrNull() ?: 0.0,
                             stockActual = stockActual.toIntOrNull() ?: 0,
-                            stockMinimo = stockMinimo.toIntOrNull() ?: 0
+                            stockMinimo = stockMinimo.toIntOrNull() ?: 0,
+                            imagenUrl   = imagenUrl.trim().ifBlank { null }
                         )
                         if (esEdicion) {
                             vm.actualizarProducto(prod)
