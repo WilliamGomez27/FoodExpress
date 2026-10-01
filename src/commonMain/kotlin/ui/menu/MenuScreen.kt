@@ -1,6 +1,8 @@
 package FoodExpress.ui.menu
 
 import FoodExpress.model.ProductoVenta
+import FoodExpress.model.RecetaIngrediente
+import FoodExpress.repository.RecetaRepository
 import FoodExpress.theme.AppColors
 import FoodExpress.utils.ImageHelper
 import FoodExpress.viewmodel.VentasViewModel
@@ -98,8 +100,19 @@ fun PantallaMenu() {
 @Composable
 fun MenuCard(producto: ProductoVenta) {
     var mostrarZoom by remember { mutableStateOf(false) }
+    var ingredientes by remember { mutableStateOf<List<RecetaIngrediente>?>(null) }
+    
     val urlImagen = ImageHelper.obtenerImagenParaProducto(producto.imagenUrl)
         ?: ImageHelper.fallbackPorNombre(producto.nombre)
+
+    LaunchedEffect(mostrarZoom) {
+        if (mostrarZoom) {
+            val repo = RecetaRepository()
+            ingredientes = repo.obtenerReceta(producto.idProductoVenta)
+        } else {
+            ingredientes = null
+        }
+    }
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -179,22 +192,106 @@ fun MenuCard(producto: ProductoVenta) {
         ) {
             Card(
                 modifier = Modifier
-                    .size(400.dp)
+                    .width(400.dp)
+                    .padding(16.dp)
                     .clickable { mostrarZoom = false },
                 shape = RoundedCornerShape(16.dp),
                 backgroundColor = AppColors.CardBg,
                 elevation = 8.dp
             ) {
-                Box(
-                    modifier = Modifier.fillMaxSize().padding(16.dp),
-                    contentAlignment = Alignment.Center
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    AsyncImage(
-                        model = urlImagen,
-                        contentDescription = "Zoom de ${producto.nombre}",
-                        contentScale = ContentScale.Fit,
-                        modifier = Modifier.fillMaxSize()
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(250.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(AppColors.Primary.copy(alpha = 0.1f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (urlImagen != null) {
+                            AsyncImage(
+                                model = urlImagen,
+                                contentDescription = "Zoom de ${producto.nombre}",
+                                contentScale = ContentScale.Fit,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        } else {
+                            Text(
+                                text = "🍽️",
+                                fontSize = 80.sp,
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(20.dp))
+                    
+                    Text(
+                        text = producto.nombre,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = AppColors.TextPrimary,
+                        textAlign = TextAlign.Center
                     )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Divider(color = AppColors.Divider)
+                    Spacer(modifier = Modifier.height(16.dp))
+                    
+                    Text(
+                        text = "Ingredientes",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = AppColors.TextMuted
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    if (ingredientes == null) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(24.dp).padding(8.dp),
+                            color = AppColors.Primary,
+                            strokeWidth = 2.dp
+                        )
+                    } else if (ingredientes!!.isEmpty()) {
+                        Text(
+                            text = "Este producto no tiene ingredientes registrados en su receta.",
+                            fontSize = 13.sp,
+                            color = AppColors.TextMuted,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.padding(top = 4.dp)
+                        )
+                    } else {
+                        Column(modifier = Modifier.fillMaxWidth()) {
+                            ingredientes!!.forEach { ing ->
+                                val cantidadTexto = if (ing.cantidad % 1.0 == 0.0) {
+                                    ing.cantidad.toInt().toString()
+                                } else {
+                                    "%.1f".format(ing.cantidad)
+                                }
+                                
+                                Row(
+                                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                                    horizontalArrangement = Arrangement.Center
+                                ) {
+                                    Text(
+                                        text = "• ${ing.nombreMateria}",
+                                        fontSize = 14.sp,
+                                        color = AppColors.TextPrimary,
+                                        fontWeight = FontWeight.Medium
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(
+                                        text = "($cantidadTexto ${ing.unidad})",
+                                        fontSize = 14.sp,
+                                        color = AppColors.TextMuted
+                                    )
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
