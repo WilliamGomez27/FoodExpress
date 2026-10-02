@@ -15,6 +15,8 @@ class InventarioViewModel(private val scope: CoroutineScope) {
     var productos       by mutableStateOf(listOf<Producto>())
         private set
 
+    var verPapelera     by mutableStateOf(false)
+
     var productoSel     by mutableStateOf<Producto?>(null)
 
     var cantidad        by mutableStateOf("")
@@ -32,12 +34,19 @@ class InventarioViewModel(private val scope: CoroutineScope) {
     fun cargarProductos() {
         scope.launch {
             cargando = true
-            productos = repository.obtenerProductos()
+            val todos = repository.obtenerProductos()
+            productos = if (verPapelera) todos.filter { !it.activo } else todos.filter { it.activo }
             if (productoSel == null && productos.isNotEmpty()) {
                 productoSel = productos.first()
             }
             cargando = false
         }
+    }
+
+    fun alternarVistaPapelera() {
+        verPapelera = !verPapelera
+        productoSel = null
+        cargarProductos()
     }
 
     fun registrarMovimiento() {
@@ -110,13 +119,27 @@ class InventarioViewModel(private val scope: CoroutineScope) {
             cargando = true
             val exito = repository.eliminarProducto(idProducto)
             if (exito) {
-                mensajeSnackbar = "✅ Producto eliminado exitosamente"
-                productos = repository.obtenerProductos()
+                mensajeSnackbar = "🗑️ Producto enviado a la papelera"
+                cargarProductos()
                 if (productoSel?.idProducto == idProducto) {
                     productoSel = productos.firstOrNull()
                 }
             } else {
-                mensajeSnackbar = "❌ Error al eliminar el producto. Verifica que no tenga movimientos o ventas asociadas."
+                mensajeSnackbar = "❌ Error al enviar a papelera."
+            }
+            cargando = false
+        }
+    }
+
+    fun restaurarProducto(idProducto: Int) {
+        scope.launch {
+            cargando = true
+            val exito = repository.restaurarProducto(idProducto)
+            if (exito) {
+                mensajeSnackbar = "✅ Producto restaurado con éxito"
+                cargarProductos()
+            } else {
+                mensajeSnackbar = "❌ Error al restaurar producto"
             }
             cargando = false
         }

@@ -57,15 +57,16 @@ class VentaDAO {
             }
 
             items.forEach { item ->
-                val ok = recetaDAO.descontarStockPorReceta(
-                    idProductoVenta  = item.productoVenta.idProductoVenta,
-                    cantidadVendida  = item.cantidad,
-                    conexion         = conexion
-                )
-                if (!ok) {
+                try {
+                    recetaDAO.descontarStockPorReceta(
+                        idProductoVenta  = item.productoVenta.idProductoVenta,
+                        cantidadVendida  = item.cantidad,
+                        conexion         = conexion
+                    )
+                } catch (e: IllegalStateException) {
                     conexion.rollback()
-                    AppLogger.error("VentaDAO", "Error al descontar stock — transacción revertida")
-                    return -1
+                    AppLogger.error("VentaDAO", "Error de validación: ${e.message}")
+                    throw e // Propagamos hacia la UI
                 }
             }
 

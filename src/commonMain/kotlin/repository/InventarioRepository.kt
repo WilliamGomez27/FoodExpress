@@ -37,4 +37,9 @@ class InventarioRepository {
         val productoDao = ProductoDAO()
         productoDao.eliminar(idProducto)
     }
+
+    suspend fun restaurarProducto(idProducto: Int): Boolean = withContext(Dispatchers.IO) {
+        val productoDao = ProductoDAO()
+        productoDao.restaurar(idProducto)
+    }
 }

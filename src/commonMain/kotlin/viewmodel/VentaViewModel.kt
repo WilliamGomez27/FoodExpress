@@ -80,18 +80,26 @@ class VentasViewModel(private val scope: CoroutineScope) {
         }
         scope.launch {
             cargando = true
-            val id = withContext(Dispatchers.IO) { ventasDAO.registrarVenta(carrito) }
-            if (id != -1) {
-                ultimaVentaId = id
-                mensajeSnackbar = "✅ Venta #$id registrada — Total: COP %.2f".format(totalCarrito)
-                limpiarCarrito()
-                val dao = ProductoVentaDAO()
-                catalogoProductos = withContext(Dispatchers.IO) { dao.obtenerTodos() }
-                historialVentas   = withContext(Dispatchers.IO) { ventasDAO.obtenerUltimasVentas() }
-            } else {
-                mensajeSnackbar = "❌ Error al procesar la venta"
+            try {
+                val id = withContext(Dispatchers.IO) { ventasDAO.registrarVenta(carrito) }
+                if (id != -1) {
+                    ultimaVentaId = id
+                    mensajeSnackbar = "✅ Venta #$id registrada — Total: COP %.2f".format(totalCarrito)
+                    limpiarCarrito()
+                    val dao = ProductoVentaDAO()
+                    catalogoProductos = withContext(Dispatchers.IO) { dao.obtenerTodos() }
+                    historialVentas   = withContext(Dispatchers.IO) { ventasDAO.obtenerUltimasVentas() }
+                } else {
+                    mensajeSnackbar = "❌ Error general al procesar la venta"
+                }
+            } catch (e: IllegalStateException) {
+                // Captura nuestra validación exacta de falta de ingredientes
+                mensajeSnackbar = "⚠️ ${e.message}"
+            } catch (e: Exception) {
+                mensajeSnackbar = "❌ Error inesperado: ${e.message}"
+            } finally {
+                cargando = false
             }
-            cargando = false
         }
     }
 

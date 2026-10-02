@@ -2,6 +2,7 @@ package FoodExpress.ui.inventario
 
 import FoodExpress.theme.AppColors
 import FoodExpress.viewmodel.InventarioViewModel
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -70,12 +71,20 @@ fun PantallaInventario() {
                         color = AppColors.TextMuted
                     )
                 }
-                Button(
-                    onClick = { mostrarDialogoNuevoProducto = true },
-                    shape = RoundedCornerShape(8.dp),
-                    colors = ButtonDefaults.buttonColors(backgroundColor = AppColors.Primary)
-                ) {
-                    Text("Nuevo Producto", color = AppColors.White, fontWeight = FontWeight.Medium)
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedButton(
+                        onClick = { vm.alternarVistaPapelera() },
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text(if (vm.verPapelera) "Ver Activos" else "Ver Papelera", fontWeight = FontWeight.Medium)
+                    }
+                    Button(
+                        onClick = { mostrarDialogoNuevoProducto = true },
+                        shape = RoundedCornerShape(8.dp),
+                        colors = ButtonDefaults.buttonColors(backgroundColor = AppColors.Primary)
+                    ) {
+                        Text("Nuevo Producto", color = AppColors.White, fontWeight = FontWeight.Medium)
+                    }
                 }
             }
             Spacer(modifier = Modifier.height(20.dp))
@@ -119,12 +128,13 @@ fun PantallaInventario() {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .background(AppColors.SidebarBg)
+                                .background(if (vm.verPapelera) AppColors.Danger else AppColors.SidebarBg)
                                 .clip(RoundedCornerShape(topStart = 14.dp, topEnd = 14.dp))
-                                .padding(horizontal = 16.dp, vertical = 12.dp)
+                                .padding(horizontal = 16.dp, vertical = 12.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Text(
-                                text = "Catálogo de Productos",
+                                text = if (vm.verPapelera) "Papelera de Reciclaje" else "Catálogo de Productos",
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = AppColors.White
@@ -146,9 +156,11 @@ fun PantallaInventario() {
                                     ProductoCard(
                                         producto = producto,
                                         isSelected = vm.productoSel?.idProducto == producto.idProducto,
+                                        enPapelera = vm.verPapelera,
                                         onClick = { vm.productoSel = producto },
                                         onEdit = { productoAEditar = producto },
-                                        onDelete = { vm.eliminarProducto(producto.idProducto) }
+                                        onDelete = { vm.eliminarProducto(producto.idProducto) },
+                                        onRestore = { vm.restaurarProducto(producto.idProducto) }
                                     )
                                 }
                             }
@@ -264,6 +276,7 @@ fun PantallaInventario() {
         var precioVenta by remember { mutableStateOf(productoAEditar?.precioVenta?.toString() ?: "") }
         var stockActual by remember { mutableStateOf(productoAEditar?.stockActual?.toString() ?: "") }
         var stockMinimo by remember { mutableStateOf(productoAEditar?.stockMinimo?.toString() ?: "") }
+        var unidadMedida by remember { mutableStateOf(productoAEditar?.unidadMedida ?: "unidades") }
         var imagenUrl   by remember { mutableStateOf(productoAEditar?.imagenUrl ?: "") }
 
         AlertDialog(
@@ -271,7 +284,7 @@ fun PantallaInventario() {
                 mostrarDialogoNuevoProducto = false 
                 productoAEditar = null
             },
-            title = { Text(if (esEdicion) "Editar Producto" else "Nuevo Producto", fontWeight = FontWeight.Bold) },
+            title = { Text(if (esEdicion) "Editar Materia Prima" else "Nueva Materia Prima", fontWeight = FontWeight.Bold) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     OutlinedTextField(
@@ -284,74 +297,77 @@ fun PantallaInventario() {
                         shape = RoundedCornerShape(8.dp),
                         colors = TextFieldDefaults.outlinedTextFieldColors(focusedBorderColor = AppColors.Primary)
                     )
-                    OutlinedTextField(
-                        value = unidadesPaq,
-                        onValueChange = { unidadesPaq = it },
-                        label = { Text("Unidades por Paq.") },
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true,
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                        shape = RoundedCornerShape(8.dp),
-                        colors = TextFieldDefaults.outlinedTextFieldColors(focusedBorderColor = AppColors.Primary)
-                    )
-                    OutlinedTextField(
-                        value = pesoLibras,
-                        onValueChange = { pesoLibras = it },
-                        label = { Text("Peso (libras)") },
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true,
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                        shape = RoundedCornerShape(8.dp),
-                        colors = TextFieldDefaults.outlinedTextFieldColors(focusedBorderColor = AppColors.Primary)
-                    )
-                    OutlinedTextField(
-                        value = precioVenta,
-                        onValueChange = { precioVenta = it },
-                        label = { Text("Precio de Venta") },
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true,
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                        shape = RoundedCornerShape(8.dp),
-                        colors = TextFieldDefaults.outlinedTextFieldColors(focusedBorderColor = AppColors.Primary)
-                    )
-                    OutlinedTextField(
-                        value = stockActual,
-                        onValueChange = { stockActual = it },
-                        label = { Text("Stock Actual") },
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true,
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                        shape = RoundedCornerShape(8.dp),
-                        colors = TextFieldDefaults.outlinedTextFieldColors(focusedBorderColor = AppColors.Primary)
-                    )
-                    OutlinedTextField(
-                        value = stockMinimo,
-                        onValueChange = { stockMinimo = it },
-                        label = { Text("Stock Mínimo") },
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true,
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                        keyboardActions = KeyboardActions(onDone = {
-                            val prod = Producto(
-                                idProducto = productoAEditar?.idProducto ?: 0,
-                                nombre = nombre,
-                                unidadesPaq = unidadesPaq.toIntOrNull() ?: 0,
-                                pesoLibras = pesoLibras.toDoubleOrNull() ?: 0.0,
-                                precioVenta = precioVenta.toDoubleOrNull() ?: 0.0,
-                                stockActual = stockActual.toIntOrNull() ?: 0,
-                                stockMinimo = stockMinimo.toIntOrNull() ?: 0
-                            )
-                            if (esEdicion) {
-                                vm.actualizarProducto(prod)
-                            } else {
-                                vm.registrarNuevoProducto(prod)
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        OutlinedTextField(
+                            value = unidadesPaq,
+                            onValueChange = { unidadesPaq = it },
+                            label = { Text("Und/Paq.") },
+                            modifier = Modifier.weight(1f),
+                            singleLine = true,
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                            shape = RoundedCornerShape(8.dp),
+                            colors = TextFieldDefaults.outlinedTextFieldColors(focusedBorderColor = AppColors.Primary)
+                        )
+                        OutlinedTextField(
+                            value = precioVenta,
+                            onValueChange = { precioVenta = it },
+                            label = { Text("Costo Unit. (COP)") },
+                            modifier = Modifier.weight(1f),
+                            singleLine = true,
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                            shape = RoundedCornerShape(8.dp),
+                            colors = TextFieldDefaults.outlinedTextFieldColors(focusedBorderColor = AppColors.Primary)
+                        )
+                    }
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        OutlinedTextField(
+                            value = stockActual,
+                            onValueChange = { stockActual = it },
+                            label = { Text("Stock Actual") },
+                            modifier = Modifier.weight(1f),
+                            singleLine = true,
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                            shape = RoundedCornerShape(8.dp),
+                            colors = TextFieldDefaults.outlinedTextFieldColors(focusedBorderColor = AppColors.Primary)
+                        )
+                        OutlinedTextField(
+                            value = stockMinimo,
+                            onValueChange = { stockMinimo = it },
+                            label = { Text("Stock Mínimo") },
+                            modifier = Modifier.weight(1f),
+                            singleLine = true,
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                            shape = RoundedCornerShape(8.dp),
+                            colors = TextFieldDefaults.outlinedTextFieldColors(focusedBorderColor = AppColors.Primary)
+                        )
+                    }
+
+                    // Dropdown for Unit of Measure
+                    var expandidoUM by remember { mutableStateOf(false) }
+                    Box(modifier = Modifier.fillMaxWidth()) {
+                        OutlinedTextField(
+                            value = unidadMedida,
+                            onValueChange = {},
+                            label = { Text("Unidad de Medida (Stock en BD)") },
+                            readOnly = true,
+                            modifier = Modifier.fillMaxWidth().clickable { expandidoUM = true },
+                            shape = RoundedCornerShape(8.dp),
+                            colors = TextFieldDefaults.outlinedTextFieldColors(focusedBorderColor = AppColors.Primary)
+                        )
+                        DropdownMenu(
+                            expanded = expandidoUM,
+                            onDismissRequest = { expandidoUM = false }
+                        ) {
+                            listOf("unidades", "gramos", "ml", "litros").forEach { um ->
+                                DropdownMenuItem(onClick = {
+                                    unidadMedida = um
+                                    expandidoUM = false
+                                }) {
+                                    Text(um)
+                                }
                             }
-                            mostrarDialogoNuevoProducto = false
-                            productoAEditar = null
-                        }),
-                        shape = RoundedCornerShape(8.dp),
-                        colors = TextFieldDefaults.outlinedTextFieldColors(focusedBorderColor = AppColors.Primary)
-                    )
+                        }
+                    }
 
                     Divider(color = AppColors.Divider, thickness = 0.5.dp)
 
@@ -363,6 +379,27 @@ fun PantallaInventario() {
                         placeholder = { Text("https://... ó dejar vacío", fontSize = 12.sp) },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true,
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                        keyboardActions = KeyboardActions(onDone = {
+                            val prod = Producto(
+                                idProducto  = productoAEditar?.idProducto ?: 0,
+                                nombre      = nombre,
+                                unidadesPaq = unidadesPaq.toIntOrNull() ?: 0,
+                                pesoLibras  = 0.0, // Ya no es tan relevante con gramos, lo dejamos en 0.0
+                                precioVenta = precioVenta.toDoubleOrNull() ?: 0.0,
+                                stockActual = stockActual.toIntOrNull() ?: 0,
+                                stockMinimo = stockMinimo.toIntOrNull() ?: 0,
+                                imagenUrl   = imagenUrl.trim().ifBlank { null },
+                                unidadMedida = unidadMedida
+                            )
+                            if (esEdicion) {
+                                vm.actualizarProducto(prod)
+                            } else {
+                                vm.registrarNuevoProducto(prod)
+                            }
+                            mostrarDialogoNuevoProducto = false
+                            productoAEditar = null
+                        }),
                         shape = RoundedCornerShape(8.dp),
                         colors = TextFieldDefaults.outlinedTextFieldColors(focusedBorderColor = AppColors.Primary)
                     )
@@ -380,11 +417,12 @@ fun PantallaInventario() {
                             idProducto  = productoAEditar?.idProducto ?: 0,
                             nombre      = nombre,
                             unidadesPaq = unidadesPaq.toIntOrNull() ?: 0,
-                            pesoLibras  = pesoLibras.toDoubleOrNull() ?: 0.0,
+                            pesoLibras  = 0.0,
                             precioVenta = precioVenta.toDoubleOrNull() ?: 0.0,
                             stockActual = stockActual.toIntOrNull() ?: 0,
                             stockMinimo = stockMinimo.toIntOrNull() ?: 0,
-                            imagenUrl   = imagenUrl.trim().ifBlank { null }
+                            imagenUrl   = imagenUrl.trim().ifBlank { null },
+                            unidadMedida = unidadMedida
                         )
                         if (esEdicion) {
                             vm.actualizarProducto(prod)

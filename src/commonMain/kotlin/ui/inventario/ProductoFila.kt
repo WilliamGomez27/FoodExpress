@@ -25,13 +25,17 @@ import androidx.compose.material.IconButton
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 
+import androidx.compose.material.icons.filled.Refresh
+
 @Composable
 fun ProductoCard(
     producto: Producto, 
     isSelected: Boolean, 
+    enPapelera: Boolean = false,
     onClick: () -> Unit,
     onEdit: () -> Unit,
-    onDelete: () -> Unit
+    onDelete: () -> Unit,
+    onRestore: () -> Unit = {}
 ) {
     val stockBajo = producto.stockActual <= producto.stockMinimo
     val borderColor = if (isSelected) AppColors.Primary else if (stockBajo) AppColors.Danger else AppColors.Divider
@@ -65,12 +69,18 @@ fun ProductoCard(
                 )
                 
                 Row {
-                    IconButton(onClick = onEdit, modifier = Modifier.size(24.dp)) {
-                        Icon(Icons.Default.Edit, contentDescription = "Editar", tint = AppColors.Primary, modifier = Modifier.size(16.dp))
-                    }
-                    Spacer(modifier = Modifier.width(4.dp))
-                    IconButton(onClick = onDelete, modifier = Modifier.size(24.dp)) {
-                        Icon(Icons.Default.Delete, contentDescription = "Eliminar", tint = AppColors.Danger, modifier = Modifier.size(16.dp))
+                    if (!enPapelera) {
+                        IconButton(onClick = onEdit, modifier = Modifier.size(24.dp)) {
+                            Icon(Icons.Default.Edit, contentDescription = "Editar", tint = AppColors.Primary, modifier = Modifier.size(16.dp))
+                        }
+                        Spacer(modifier = Modifier.width(4.dp))
+                        IconButton(onClick = onDelete, modifier = Modifier.size(24.dp)) {
+                            Icon(Icons.Default.Delete, contentDescription = "Eliminar", tint = AppColors.Danger, modifier = Modifier.size(16.dp))
+                        }
+                    } else {
+                        IconButton(onClick = onRestore, modifier = Modifier.size(24.dp)) {
+                            Icon(Icons.Default.Refresh, contentDescription = "Restaurar", tint = AppColors.Success, modifier = Modifier.size(16.dp))
+                        }
                     }
                 }
             }
@@ -79,11 +89,11 @@ fun ProductoCard(
             
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Column {
-                    Text("Stock: ${producto.stockActual}", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = if (stockBajo) AppColors.Danger else AppColors.TextPrimary)
+                    Text("Stock: ${producto.stockActual} ${producto.unidadMedida}", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = if (stockBajo) AppColors.Danger else AppColors.TextPrimary)
                     Text("Mínimo: ${producto.stockMinimo}", fontSize = 11.sp, color = AppColors.TextMuted)
                 }
                 Column(horizontalAlignment = Alignment.End) {
-                    Text("Precio Venta", fontSize = 11.sp, color = AppColors.TextMuted)
+                    Text("Costo Unit.", fontSize = 11.sp, color = AppColors.TextMuted)
                     Text("COP %.2f".format(producto.precioVenta), fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = AppColors.Success)
                 }
             }

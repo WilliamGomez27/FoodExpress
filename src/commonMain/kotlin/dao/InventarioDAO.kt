@@ -63,7 +63,7 @@ class InventarioDAO {
         }
     }
 
-    fun obtenerTodosProductos(): List<Producto> {
+    fun obtenerTodosProductos(soloActivos: Boolean = true): List<Producto> {
         val conexion = ConexionDB.getConexion()
         if (conexion == null) {
             AppLogger.error("InventarioDAO", "No se pudo obtener conexión para obtenerTodosProductos")
@@ -71,9 +71,11 @@ class InventarioDAO {
         }
 
         val lista = mutableListOf<Producto>()
+        val condition = if (soloActivos) "WHERE activo = true" else ""
         val sql = """
-            SELECT id_producto, nombre, unidades_paq, peso_libras, precio_venta, stock_actual, stock_minimo
+            SELECT id_producto, nombre, unidades_paq, peso_libras, precio_venta, stock_actual, stock_minimo, imagen_url, unidad_medida, activo
             FROM productos
+            $condition
             ORDER BY nombre ASC
         """
         return try {
@@ -89,7 +91,10 @@ class InventarioDAO {
                                 pesoLibras   = rs.getDouble("peso_libras"),
                                 precioVenta  = rs.getDouble("precio_venta"),
                                 stockActual  = rs.getInt("stock_actual"),
-                                stockMinimo  = rs.getInt("stock_minimo")
+                                stockMinimo  = rs.getInt("stock_minimo"),
+                                imagenUrl    = rs.getString("imagen_url"),
+                                unidadMedida = rs.getString("unidad_medida") ?: "unidades",
+                                activo       = rs.getBoolean("activo")
                             )
                         )
                     }

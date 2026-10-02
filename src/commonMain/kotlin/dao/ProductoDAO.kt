@@ -11,7 +11,7 @@ class ProductoDAO {
     fun obtenerPorId(id: Int): Producto? {
         val conexion = ConexionDB.getConexion() ?: return null
         var producto: Producto? = null
-        val sql = "SELECT id_producto, nombre, unidades_paq, peso_libras, precio_venta, stock_actual, stock_minimo, imagen_url FROM productos WHERE id_producto = ?"
+        val sql = "SELECT id_producto, nombre, unidades_paq, peso_libras, precio_venta, stock_actual, stock_minimo, imagen_url, unidad_medida, activo FROM productos WHERE id_producto = ?"
         try {
             conexion.use { conn ->
                 conn.prepareStatement(sql).use { stmt ->
@@ -26,7 +26,9 @@ class ProductoDAO {
                             precioVenta  = rs.getDouble("precio_venta"),
                             stockActual  = rs.getInt("stock_actual"),
                             stockMinimo  = rs.getInt("stock_minimo"),
-                            imagenUrl    = rs.getString("imagen_url")
+                            imagenUrl    = rs.getString("imagen_url"),
+                            unidadMedida = rs.getString("unidad_medida") ?: "unidades",
+                            activo       = rs.getBoolean("activo")
                         )
                     }
                 }
@@ -39,7 +41,7 @@ class ProductoDAO {
 
     fun insertar(producto: Producto): Boolean {
         val conexion = ConexionDB.getConexion() ?: return false
-        val sql = "INSERT INTO productos (nombre, unidades_paq, peso_libras, precio_venta, stock_actual, stock_minimo, imagen_url) VALUES (?, ?, ?, ?, ?, ?, ?)"
+        val sql = "INSERT INTO productos (nombre, unidades_paq, peso_libras, precio_venta, stock_actual, stock_minimo, imagen_url, unidad_medida, activo) VALUES (?, ?, ?, ?, ?, ?, ?, ?, true)"
         return try {
             conexion.use { conn ->
                 conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS).use { stmt ->
@@ -50,6 +52,7 @@ class ProductoDAO {
                     stmt.setInt(5, producto.stockActual)
                     stmt.setInt(6, producto.stockMinimo)
                     stmt.setString(7, producto.imagenUrl)
+                    stmt.setString(8, producto.unidadMedida)
                     stmt.executeUpdate() > 0
                 }
             }
@@ -61,7 +64,7 @@ class ProductoDAO {
 
     fun actualizar(producto: Producto): Boolean {
         val conexion = ConexionDB.getConexion() ?: return false
-        val sql = "UPDATE productos SET nombre = ?, unidades_paq = ?, peso_libras = ?, precio_venta = ?, stock_actual = ?, stock_minimo = ?, imagen_url = ? WHERE id_producto = ?"
+        val sql = "UPDATE productos SET nombre = ?, unidades_paq = ?, peso_libras = ?, precio_venta = ?, stock_actual = ?, stock_minimo = ?, imagen_url = ?, unidad_medida = ?, activo = ? WHERE id_producto = ?"
         return try {
             conexion.use { conn ->
                 conn.prepareStatement(sql).use { stmt ->
@@ -72,7 +75,9 @@ class ProductoDAO {
                     stmt.setInt(5, producto.stockActual)
                     stmt.setInt(6, producto.stockMinimo)
                     stmt.setString(7, if (producto.imagenUrl.isNullOrBlank()) null else producto.imagenUrl)
-                    stmt.setInt(8, producto.idProducto)
+                    stmt.setString(8, producto.unidadMedida)
+                    stmt.setBoolean(9, producto.activo)
+                    stmt.setInt(10, producto.idProducto)
                     stmt.executeUpdate() > 0
                 }
             }
@@ -84,7 +89,8 @@ class ProductoDAO {
 
     fun eliminar(id: Int): Boolean {
         val conexion = ConexionDB.getConexion() ?: return false
-        val sql = "DELETE FROM productos WHERE id_producto = ?"
+        // BORRADO LÓGICO: Solo marcamos como inactivo en lugar de borrar la fila.
+        val sql = "UPDATE productos SET activo = false WHERE id_producto = ?"
         return try {
             conexion.use { conn ->
                 conn.prepareStatement(sql).use { stmt ->
@@ -93,7 +99,23 @@ class ProductoDAO {
                 }
             }
         } catch (e: SQLException) {
-            AppLogger.error("ProductoDAO", "Error al eliminar producto: ${e.message}")
+            AppLogger.error("ProductoDAO", "Error al enviar a papelera: ${e.message}")
+            false
+        }
+    }
+
+    fun restaurar(id: Int): Boolean {
+        val conexion = ConexionDB.getConexion() ?: return false
+        val sql = "UPDATE productos SET activo = true WHERE id_producto = ?"
+        return try {
+            conexion.use { conn ->
+                conn.prepareStatement(sql).use { stmt ->
+                    stmt.setInt(1, id)
+                    stmt.executeUpdate() > 0
+                }
+            }
+        } catch (e: SQLException) {
+            AppLogger.error("ProductoDAO", "Error al restaurar: ${e.message}")
             false
         }
     }

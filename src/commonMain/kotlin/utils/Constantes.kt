@@ -3,7 +3,7 @@
 // Constantes globales de la aplicación
 object Constantes {
     const val APP_NAME    = "FoodExpress"
-    const val APP_VERSION = "1.0"
+    const val APP_VERSION = "1.0.1"
     const val MONEDA      = "Q"
 
     // Límites de negocio

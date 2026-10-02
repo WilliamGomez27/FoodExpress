@@ -93,64 +93,55 @@ class RecetaDAO {
 
     /**
      * Descuenta el stock de materia prima por receta.
-     *
-     * FIX SEC-006: Verifica stock suficiente ANTES de descontar con SELECT FOR UPDATE.
-     * Si algún ingrediente no tiene stock, retorna false y VentaDAO hace rollback.
+     * Si algún ingrediente no tiene stock, lanza una IllegalStateException con el mensaje exacto.
      */
     fun descontarStockPorReceta(
         idProductoVenta: Int,
         cantidadVendida: Int,
         conexion: Connection
-    ): Boolean {
+    ) {
         val ingredientes = obtenerRecetaConConexion(idProductoVenta, conexion)
         if (ingredientes.isEmpty()) {
             AppLogger.warn("RecetaDAO", "Sin receta para #$idProductoVenta — sin descuento de stock")
-            return true
+            return
         }
 
-        // ── FIX SEC-006: Verificar stock ANTES de descontar ──
-        val sqlCheck = "SELECT nombre, stock_actual FROM productos WHERE id_producto = ? FOR UPDATE"
+        // ── Verificar stock ANTES de descontar ──
+        val sqlCheck = "SELECT nombre, stock_actual, unidad_medida FROM productos WHERE id_producto = ? FOR UPDATE"
         for (ing in ingredientes) {
             val totalDescontar = ing.cantidad * cantidadVendida
-            try {
-                conexion.prepareStatement(sqlCheck).use { stmt ->
-                    stmt.setInt(1, ing.idProducto)
-                    val rs = stmt.executeQuery()
-                    if (rs.next()) {
-                        val stockActual = rs.getDouble("stock_actual")
-                        val nombre = rs.getString("nombre")
-                        if (stockActual < totalDescontar) {
-                            AppLogger.error(
-                                "RecetaDAO",
-                                "Stock insuficiente de '$nombre': disponible=$stockActual, requerido=$totalDescontar"
-                            )
-                            return false // VentaDAO hará rollback
-                        }
+            conexion.prepareStatement(sqlCheck).use { stmt ->
+                stmt.setInt(1, ing.idProducto)
+                val rs = stmt.executeQuery()
+                if (rs.next()) {
+                    val stockActual = rs.getDouble("stock_actual")
+                    val nombre = rs.getString("nombre")
+                    val unidad = rs.getString("unidad_medida") ?: "unidades"
+                    if (stockActual < totalDescontar) {
+                        AppLogger.error(
+                            "RecetaDAO",
+                            "Stock insuficiente de '$nombre': disponible=$stockActual, requerido=$totalDescontar"
+                        )
+                        // Lanzamos excepción controlada para mostrar en UI
+                        throw IllegalStateException("Stock insuficiente de '$nombre'. Disponible: $stockActual $unidad, Requerido: $totalDescontar $unidad")
                     }
+                } else {
+                    throw IllegalStateException("El ingrediente con ID ${ing.idProducto} ya no existe en el inventario.")
                 }
-            } catch (e: SQLException) {
-                AppLogger.error("RecetaDAO", "Error verificando stock #${ing.idProducto}: ${e.message}")
-                return false
             }
         }
 
         // Stock suficiente — proceder con el descuento
         val sqlUpdate = "UPDATE productos SET stock_actual = stock_actual - ? WHERE id_producto = ?"
-        return try {
-            conexion.prepareStatement(sqlUpdate).use { stmt ->
-                ingredientes.forEach { ing ->
-                    stmt.setDouble(1, ing.cantidad * cantidadVendida)
-                    stmt.setInt(2, ing.idProducto)
-                    stmt.addBatch()
-                }
-                stmt.executeBatch()
+        conexion.prepareStatement(sqlUpdate).use { stmt ->
+            ingredientes.forEach { ing ->
+                stmt.setDouble(1, ing.cantidad * cantidadVendida)
+                stmt.setInt(2, ing.idProducto)
+                stmt.addBatch()
             }
-            AppLogger.info("RecetaDAO", "Stock descontado para ${ingredientes.size} ingredientes")
-            true
-        } catch (e: SQLException) {
-            AppLogger.error("RecetaDAO", "Error al descontar stock: ${e.message}")
-            false
+            stmt.executeBatch()
         }
+        AppLogger.info("RecetaDAO", "Stock descontado para ${ingredientes.size} ingredientes")
     }
 
     private fun obtenerRecetaConConexion(
