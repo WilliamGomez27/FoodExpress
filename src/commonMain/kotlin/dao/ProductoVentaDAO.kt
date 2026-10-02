@@ -11,7 +11,20 @@ class ProductoVentaDAO {
     fun obtenerTodos(): List<ProductoVenta> {
         val conexion = ConexionDB.getConexion() ?: return emptyList()
         val lista = mutableListOf<ProductoVenta>()
-        val sql = "SELECT id_producto_venta, nombre, precio_venta, categoria, imagen_url FROM productos_venta ORDER BY nombre ASC"
+        
+        // Modificado para obtener también la descripción de ingredientes de la tabla 'productos'
+        val sql = """
+            SELECT 
+                pv.id_producto_venta, 
+                pv.nombre, 
+                pv.precio_venta, 
+                pv.categoria, 
+                pv.imagen_url,
+                p.ingredientes
+            FROM productos_venta pv
+            LEFT JOIN productos p ON p.nombre = pv.nombre
+            ORDER BY pv.nombre ASC
+        """.trimIndent()
         
         return try {
             conexion.use { conn ->
@@ -24,7 +37,8 @@ class ProductoVentaDAO {
                                 nombre = rs.getString("nombre"),
                                 precioVenta = rs.getDouble("precio_venta"),
                                 categoria = rs.getString("categoria") ?: "General",
-                                imagenUrl = rs.getString("imagen_url")
+                                imagenUrl = rs.getString("imagen_url"),
+                                descripcionIngredientes = rs.getString("ingredientes")
                             )
                         )
                     }

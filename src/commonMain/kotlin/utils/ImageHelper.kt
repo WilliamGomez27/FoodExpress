@@ -11,6 +11,8 @@ package FoodExpress.utils
  */
 object ImageHelper {
 
+    private val listaImagenes = (1..18).map { "img_$it.jpeg" }
+
     /**
      * Lista de nombres de archivo de imágenes locales con su descripción.
      * Usado por el selector de imagen en el diálogo de Inventario.
@@ -62,12 +64,15 @@ object ImageHelper {
     )
 
     /**
-     * Devuelve el model para [AsyncImage] a partir de una URL de BD.
-     * Si la URL es válida la devuelve tal cual (Coil la carga por red).
-     * Si es null/vacía devuelve null para que la UI muestre el placeholder.
+     * Devuelve el model para [AsyncImage].
+     * Si hay URL web se usa, sino asigna imagen local por ID.
      */
-    fun obtenerImagenParaProducto(imagenActual: String?): Any? {
-        return if (imagenActual?.isNotBlank() == true) imagenActual else null
+    fun obtenerImagenParaProducto(id: Int, imagenActual: String?): Any? {
+        if (imagenActual?.isNotBlank() == true) return imagenActual
+        val idPositivo = if (id < 0) -id else id
+        val index = idPositivo % listaImagenes.size
+        val nombreArchivo = listaImagenes[index]
+        return ImageLoader.modelParaAsset(nombreArchivo)
     }
 
     /**

@@ -8,5 +8,6 @@ data class ProductoVenta(
     val nombre: String,
     val precioVenta: Double,
     val categoria: String = "General",
-    val imagenUrl: String? = null
+    val imagenUrl: String? = null,
+    val descripcionIngredientes: String? = null // Columna 'ingredientes' de la tabla 'productos'
 )

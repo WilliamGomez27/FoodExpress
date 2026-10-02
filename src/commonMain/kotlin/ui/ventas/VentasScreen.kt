@@ -209,7 +209,7 @@ fun CatalogoCard(producto: ProductoVenta, enCarrito: Int, onAgregar: () -> Unit)
             modifier = Modifier.padding(12.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            val urlImagen = ImageHelper.obtenerImagenParaProducto(producto.imagenUrl)
+            val urlImagen = ImageHelper.obtenerImagenParaProducto(producto.idProductoVenta, producto.imagenUrl)
                 ?: ImageHelper.fallbackPorNombre(producto.nombre)
             if (urlImagen != null) {
                 AsyncImage(
