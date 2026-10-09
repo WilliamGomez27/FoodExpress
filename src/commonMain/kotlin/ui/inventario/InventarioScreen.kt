@@ -5,7 +5,6 @@ import FoodExpress.viewmodel.InventarioViewModel
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
@@ -272,7 +271,6 @@ fun PantallaInventario() {
         val esEdicion = productoAEditar != null
         var nombre      by remember { mutableStateOf(productoAEditar?.nombre ?: "") }
         var unidadesPaq by remember { mutableStateOf(productoAEditar?.unidadesPaq?.toString() ?: "") }
-        var pesoLibras  by remember { mutableStateOf(productoAEditar?.pesoLibras?.toString() ?: "") }
         var precioVenta by remember { mutableStateOf(productoAEditar?.precioVenta?.toString() ?: "") }
         var stockActual by remember { mutableStateOf(productoAEditar?.stockActual?.toString() ?: "") }
         var stockMinimo by remember { mutableStateOf(productoAEditar?.stockMinimo?.toString() ?: "") }
