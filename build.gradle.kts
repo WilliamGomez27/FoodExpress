@@ -37,11 +37,14 @@ kotlin {
 
             // Volvemos a la versión 5.1.49 de MySQL Connector para Android
             // porque las versiones 8.0+ y 9.0+ usan java.sql.SQLType que NO existe en Android.
+            // noinspection GradleDependency
             implementation("mysql:mysql-connector-java:5.1.49")
             implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
 
             // Coil 3 para carga de imágenes en Compose Multiplatform
+            // noinspection GradleDependency
             implementation("io.coil-kt.coil3:coil-compose:3.1.0")
+            // noinspection GradleDependency
             implementation("io.coil-kt.coil3:coil-network-ktor3:3.1.0")
         }
 
@@ -59,7 +62,6 @@ kotlin {
             implementation("androidx.test.ext:junit:1.3.0")
             implementation("androidx.test.espresso:espresso-core:3.7.0")
             implementation("androidx.compose.ui:ui-test-junit4:1.12.1")
-            implementation("androidx.compose.ui:ui-test-manifest:1.12.1")
         }
 
         sourceSets.getByName("desktopMain").dependencies {
@@ -69,7 +71,9 @@ kotlin {
 
         sourceSets.getByName("desktopTest").dependencies {
             // Testcontainers — MySQL real en Docker para integration tests
+            // noinspection GradleDependency
             implementation("org.testcontainers:testcontainers:1.21.4")
+            // noinspection GradleDependency
             implementation("org.testcontainers:mysql:1.21.4")
             // MockK — Mocking para Kotlin
             implementation("io.mockk:mockk:1.14.11")
