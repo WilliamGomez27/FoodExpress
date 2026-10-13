@@ -54,11 +54,19 @@ object DatabaseTestSetup {
 
     /** Obtiene una conexión directa al contenedor para setup/teardown de tests. */
     fun getTestConnection(): Connection {
-        return DriverManager.getConnection(
-            mysql.jdbcUrl,
-            mysql.username,
-            mysql.password
-        )
+        return try {
+            DriverManager.getConnection(
+                mysql.jdbcUrl.replace("jdbc:mysql://", "jdbc:mariadb://"),
+                mysql.username,
+                mysql.password
+            )
+        } catch (_: Throwable) {
+            DriverManager.getConnection(
+                mysql.jdbcUrl,
+                mysql.username,
+                mysql.password
+            )
+        }
     }
 
     /** Limpia todas las tablas de datos (sin eliminar el schema). */

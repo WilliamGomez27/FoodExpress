@@ -35,8 +35,9 @@ kotlin {
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
 
-            // Driver de MariaDB/MySQL 100% compatible con MySQL, seguro y totalmente compatible con Android (no requiere java.sql.SQLType)
+            // Drivers JDBC modernos y seguros (MariaDB para Android/KMP y MySQL 9 para Desktop JVM)
             implementation("org.mariadb.jdbc:mariadb-java-client:3.5.10")
+            implementation("com.mysql:mysql-connector-j:9.2.0")
             implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
 
             // Coil 3 para carga de imágenes en Compose Multiplatform
@@ -135,7 +136,7 @@ configurations.all {
             substitute(module("org.bouncycastle:bcprov-jdk15to18"))
                 .using(module("org.bouncycastle:bcprov-jdk18on:1.86"))
             substitute(module("mysql:mysql-connector-java"))
-                .using(module("org.mariadb.jdbc:mariadb-java-client:3.5.10"))
+                .using(module("com.mysql:mysql-connector-j:9.2.0"))
         }
     }
 }

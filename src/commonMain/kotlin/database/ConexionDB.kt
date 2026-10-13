@@ -31,15 +31,21 @@ object ConexionDB {
             }
 
             val ssl = if (DbConfig.usarSSL) "true" else "false"
-            val jdbcUrl = "jdbc:mysql://${DbConfig.host}:${DbConfig.puerto}/${DbConfig.nombreDB}" +
-                    "?useSSL=$ssl" +
+            val host = DbConfig.host
+            val puerto = DbConfig.puerto
+            val db = DbConfig.nombreDB
+            val params = "?useSSL=$ssl" +
                     "&serverTimezone=UTC" +
                     "&allowPublicKeyRetrieval=${!DbConfig.usarSSL}" +
                     "&characterEncoding=UTF-8" +
                     "&connectTimeout=5000" +
                     "&socketTimeout=5000"
 
-            val conn = DriverManager.getConnection(jdbcUrl, DbConfig.usuario, DbConfig.password)
+            val conn = try {
+                DriverManager.getConnection("jdbc:mariadb://$host:$puerto/$db$params", DbConfig.usuario, DbConfig.password)
+            } catch (_: Throwable) {
+                DriverManager.getConnection("jdbc:mysql://$host:$puerto/$db$params", DbConfig.usuario, DbConfig.password)
+            }
             // AppLogger.info("ConexionDB", "Nueva conexión establecida en ${DbConfig.host}:${DbConfig.puerto}")
             conn
         } catch (e: Exception) {
