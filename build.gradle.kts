@@ -35,10 +35,8 @@ kotlin {
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
 
-            // Volvemos a la versión 5.1.49 de MySQL Connector para Android
-            // porque las versiones 8.0+ y 9.0+ usan java.sql.SQLType que NO existe en Android.
-            // noinspection GradleDependency
-            implementation("mysql:mysql-connector-java:5.1.49")
+            // Driver de MariaDB/MySQL 100% compatible con MySQL, seguro y totalmente compatible con Android (no requiere java.sql.SQLType)
+            implementation("org.mariadb.jdbc:mariadb-java-client:3.5.10")
             implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
 
             // Coil 3 para carga de imágenes en Compose Multiplatform
@@ -119,3 +117,26 @@ compose.desktop {
 dependencies {
     debugImplementation("androidx.compose.ui:ui-test-manifest:1.12.1")
 }
+
+// Configuración global para forzar versiones sin vulnerabilidades conocidas (Dependabot security fixes)
+configurations.all {
+    resolutionStrategy {
+        force("org.bouncycastle:bcprov-jdk18on:1.86")
+        force("io.netty:netty-handler:4.1.118.Final")
+        force("io.netty:netty-codec-http2:4.1.118.Final")
+        force("com.google.protobuf:protobuf-java:4.29.3")
+        force("commons-io:commons-io:2.18.0")
+        force("org.apache.commons:commons-compress:1.28.0")
+        force("org.jdom:jdom2:2.0.6.1")
+
+        dependencySubstitution {
+            substitute(module("org.bouncycastle:bcprov-jdk15on"))
+                .using(module("org.bouncycastle:bcprov-jdk18on:1.86"))
+            substitute(module("org.bouncycastle:bcprov-jdk15to18"))
+                .using(module("org.bouncycastle:bcprov-jdk18on:1.86"))
+            substitute(module("mysql:mysql-connector-java"))
+                .using(module("org.mariadb.jdbc:mariadb-java-client:3.5.10"))
+        }
+    }
+}
+

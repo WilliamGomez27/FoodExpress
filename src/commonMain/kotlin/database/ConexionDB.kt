@@ -20,7 +20,15 @@ object ConexionDB {
         DbConfig.verificar()
 
         return try {
-            Class.forName("com.mysql.jdbc.Driver")
+            try {
+                Class.forName("org.mariadb.jdbc.Driver")
+            } catch (_: Throwable) {
+                try {
+                    Class.forName("com.mysql.cj.jdbc.Driver")
+                } catch (_: Throwable) {
+                    Class.forName("com.mysql.jdbc.Driver")
+                }
+            }
 
             val ssl = if (DbConfig.usarSSL) "true" else "false"
             val jdbcUrl = "jdbc:mysql://${DbConfig.host}:${DbConfig.puerto}/${DbConfig.nombreDB}" +

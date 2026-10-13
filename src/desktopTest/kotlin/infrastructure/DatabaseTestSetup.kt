@@ -41,7 +41,15 @@ object DatabaseTestSetup {
             password = "test_password_123",
             usarSSL  = false
         )
-        Class.forName("com.mysql.jdbc.Driver")
+        try {
+            Class.forName("org.mariadb.jdbc.Driver")
+        } catch (_: Throwable) {
+            try {
+                Class.forName("com.mysql.cj.jdbc.Driver")
+            } catch (_: Throwable) {
+                Class.forName("com.mysql.jdbc.Driver")
+            }
+        }
     }
 
     /** Obtiene una conexión directa al contenedor para setup/teardown de tests. */
