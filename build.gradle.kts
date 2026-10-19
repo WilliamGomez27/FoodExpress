@@ -123,8 +123,8 @@ dependencies {
 configurations.all {
     resolutionStrategy {
         force("org.bouncycastle:bcprov-jdk18on:1.86")
-        force("io.netty:netty-handler:4.1.118.Final")
-        force("io.netty:netty-codec-http2:4.1.118.Final")
+        force("io.netty:netty-handler:4.1.137.Final")
+        force("io.netty:netty-codec-http2:4.1.137.Final")
         force("com.google.protobuf:protobuf-java:4.29.3")
         force("commons-io:commons-io:2.18.0")
         force("org.apache.commons:commons-compress:1.28.0")
